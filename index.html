@@ -1,279 +1,451 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8" />
-<title>終極數獨遊戲</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
+  <meta charset="UTF-8" />
+  <title>終極 Sudoku 遊戲</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
     body {
-        background: #1e1e1e;
-        color: #fff;
-        font-family: Arial, sans-serif;
-        text-align: center;
-        padding: 20px;
+      margin: 0;
+      background: #1a1a1a;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-
-    h1 { margin-bottom: 10px; }
-
-    #controls {
-        margin-bottom: 15px;
+    .light {
+      background: #f0f0f0;
+      color: #222;
     }
-
-    button, select {
-        padding: 10px 15px;
-        font-size: 16px;
-        margin: 5px;
-        cursor: pointer;
+    .top-bar {
+      width: 100%;
+      text-align: center;
+      padding: 10px;
     }
-
+    .controls button, select {
+      padding: 6px 10px;
+      margin: 3px;
+      font-size: 16px;
+      cursor: pointer;
+    }
     #sudoku {
-        margin: 20px auto;
-        width: 90vw;
-        max-width: 500px;
-        display: grid;
-        grid-template-columns: repeat(9, 1fr);
-        border: 4px solid #fff;
+      margin-top: 20px;
+      width: 90vw;
+      max-width: 500px;
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      border: 4px solid white;
     }
-
-    input {
-        width: 100%;
-        aspect-ratio: 1;
-        text-align: center;
-        font-size: 24px;
-        border: 1px solid #555;
-        background: #333;
-        color: #fff;
+    .cell {
+      border: 1px solid #555;
+      aspect-ratio: 1;
+      font-size: 28px;
+      text-align: center;
+      background: #333;
+      color: white;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
     }
-
+    .light .cell { background: #fdfdfd; color: black; }
     .fixed {
-        background: #444;
-        font-weight: bold;
+      background: #444 !important;
+      font-weight: bold;
     }
-
-    .error {
-        background: #a00 !important;
+    .light .fixed { background: #ddd !important; }
+    .highlight { background: #555 !important; }
+    .same-number { background: #6a6 !important; }
+    .error { background: #a00 !important; }
+    .note { font-size: 12px; opacity: 0.8; }
+    #numberPad {
+      position: fixed;
+      bottom: 20px;
+      display: grid;
+      grid-template-columns: repeat(5, 50px);
+      gap: 5px;
     }
-
-    /* 粗方塊框 */
-    input:nth-child(3n+1) { border-left: 3px solid #fff; }
-    input:nth-child(-n+9) { border-top: 3px solid #fff; }
-
-    #message { margin-top: 10px; font-size: 20px; min-height: 25px; }
-</style>
+    #numberPad button {
+      font-size: 18px;
+      padding: 8px;
+      cursor: pointer;
+    }
+    #message {
+      margin-top: 10px;
+      min-height: 25px;
+      font-size: 20px;
+    }
+    .cell.anim {
+      animation: pop 0.15s;
+    }
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.22); }
+      100% { transform: scale(1); }
+    }
+    .confetti {
+      position: fixed;
+      width: 8px;
+      height: 8px;
+      background: yellow;
+      top: -20px;
+      opacity: 0.8;
+      pointer-events: none;
+    }
+    @keyframes fall {
+      to { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+  </style>
 </head>
 <body>
 
-<h1>終極數獨遊戲</h1>
-
-<div id="controls">
-    <select id="difficulty">
+  <div class="top-bar">
+    <h1>終極數獨</h1>
+    <div class="controls">
+      <select id="difficulty">
         <option value="40">簡單</option>
         <option value="50">中等</option>
         <option value="60">困難</option>
         <option value="70">地獄</option>
-    </select>
-    <button onclick="newGame()">新遊戲</button>
-    <button onclick="solveSudoku()">自動解題</button>
-    <button onclick="checkErrors()">檢查錯誤</button>
-</div>
+      </select>
+      <button id="newGameBtn">新遊戲</button>
+      <button id="restartBtn">重開本局</button>
+      <button id="undoBtn">↶ Undo</button>
+      <button id="redoBtn">↷ Redo</button>
+      <button id="hintBtn">提示</button>
+      <button id="solveBtn">自動解題</button>
+      <button id="themeBtn">🌙/☀</button>
+      <span id="timer">00:00</span>
+    </div>
+  </div>
 
-<div id="sudoku"></div>
-<div id="message"></div>
+  <div id="sudoku"></div>
 
-<script>
-// -------------------- Sudoku 遊戲邏輯 --------------------
-const sudokuBoard = document.getElementById("sudoku");
-const message = document.getElementById("message");
+  <div id="numberPad">
+    <button class="num">1</button><button class="num">2</button><button class="num">3</button>
+    <button class="num">4</button><button class="num">5</button><button class="num">6</button>
+    <button class="num">7</button><button class="num">8</button><button class="num">9</button>
+    <button id="noteToggle">筆記</button>
+    <button id="eraseBtn">清除</button>
+  </div>
 
-let board = [];
+  <div id="message"></div>
 
-function createEmptyBoard() {
-    board = Array.from({ length: 9 }, () => Array(9).fill(0));
-}
+  <script>
+    
+    let board = [], solution = null;
+    let historyStack = [], redoStack = [];
+    let selectedCell = null;
+    let noteMode = false;
+    let errors = 0;
+    let timerInterval = null, startTime = null;
+    let themeDark = true;
 
 
-function isValid(board, row, col, num) {
-    for (let x = 0; x < 9; x++) {
-        if (board[row][x] === num) return false;
-        if (board[x][col] === num) return false;
+
+    function makeEmptyBoard() {
+      board = Array.from({ length: 9 }, () => Array(9).fill(0));
     }
-    const br = Math.floor(row / 3) * 3;
-    const bc = Math.floor(col / 3) * 3;
-    for (let r = br; r < br + 3; r++)
-        for (let c = bc; c < bc + 3; c++)
-            if (board[r][c] === num) return false;
 
-    return true;
-}
-
-
-function fillBoard(board) {
-    for (let row = 0; row < 9; row++) {
-        for (let col = 0; col < 9; col++) {
-            if (board[row][col] === 0) {
-                let nums = [1,2,3,4,5,6,7,8,9].sort(() => Math.random() - 0.5);
-                for (let num of nums) {
-                    if (isValid(board, row, col, num)) {
-                        board[row][col] = num;
-                        if (fillBoard(board)) return true;
-                        board[row][col] = 0;
-                    }
-                }
-                return false;
-            }
-        }
+    function isValid(b, r, c, num) {
+      for (let x = 0; x < 9; x++) {
+        if (b[r][x] === num) return false;
+        if (b[x][c] === num) return false;
+      }
+      const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
+      for (let rr = br; rr < br+3; rr++)
+        for (let cc = bc; cc < bc+3; cc++)
+          if (b[rr][cc] === num) return false;
+      return true;
     }
-    return true;
-}
 
-
-function removeNumbers(board, amount) {
-    let removed = 0;
-    while (removed < amount) {
-        let r = Math.floor(Math.random() * 9);
-        let c = Math.floor(Math.random() * 9);
-        if (board[r][c] !== 0) {
-            board[r][c] = 0;
-            removed++;
-        }
-    }
-}
-
-
-function drawBoard(board) {
-    sudokuBoard.innerHTML = "";
-
-    for (let r = 0; r < 9; r++) {
+    function fillBoard(b) {
+      for (let r = 0; r < 9; r++) {
         for (let c = 0; c < 9; c++) {
-            let cell = document.createElement("input");
-            cell.maxLength = 1;
-
-            if (board[r][c] !== 0) {
-                cell.value = board[r][c];
-                cell.classList.add("fixed");
-                cell.disabled = true;
+          if (b[r][c] === 0) {
+            let nums = [1,2,3,4,5,6,7,8,9].sort(() => Math.random() - 0.5);
+            for (let num of nums) {
+              if (isValid(b, r, c, num)) {
+                b[r][c] = num;
+                if (fillBoard(b)) return true;
+                b[r][c] = 0;
+              }
             }
-
-            cell.dataset.row = r;
-            cell.dataset.col = c;
-
-            cell.addEventListener("input", handleInput);
-            sudokuBoard.appendChild(cell);
+            return false;
+          }
         }
-    }
-}
-
-
-function handleInput(e) {
-    let cell = e.target;
-    let value = cell.value;
-
-    if (!/^[1-9]$/.test(value)) {
-        cell.value = "";
-        return;
+      }
+      return true;
     }
 
-    message.textContent = "";
-    checkErrors();
-}
-
-
-function checkErrors() {
-    sudokuBoard.querySelectorAll("input").forEach(c => c.classList.remove("error"));
-
-    let ok = true;
-
-    for (let r = 0; r < 9; r++) {
-        for (let c = 0; c < 9; c++) {
-            let val = sudokuBoard.children[r * 9 + c].value;
-            if (!val) continue;
-
-            if (!inputIsValid(r, c, val)) {
-                sudokuBoard.children[r * 9 + c].classList.add("error");
-                ok = false;
-            }
-        }
-    }
-
-    if (ok) message.textContent = "👍 沒有錯誤";
-    else message.textContent = "❌ 有錯誤，請檢查紅色格子";
-
-    return ok;
-}
-
-function inputIsValid(row, col, value) {
-    for (let c = 0; c < 9; c++) {
-        if (c !== col && sudokuBoard.children[row * 9 + c].value == value) return false;
-    }
-    for (let r = 0; r < 9; r++) {
-        if (r !== row && sudokuBoard.children[r * 9 + col].value == value) return false;
-    }
-
-    let br = Math.floor(row / 3) * 3;
-    let bc = Math.floor(col / 3) * 3;
-    for (let r = br; r < br + 3; r++)
-        for (let c = bc; c < bc + 3; c++)
-            if (!(r === row && c === col) &&
-                sudokuBoard.children[r * 9 + c].value == value)
-                return false;
-
-    return true;
-}
-
-
-function readBoard() {
-    let b = Array.from({ length: 9 }, () => Array(9).fill(0));
-    for (let r = 0; r < 9; r++)
-        for (let c = 0; c < 9; c++) {
-            let v = sudokuBoard.children[r * 9 + c].value;
-            b[r][c] = v ? Number(v) : 0;
-        }
-    return b;
-}
-
-
-function solveSudoku() {
-    let b = readBoard();
-
-    function solve() {
+    function hasUniqueSolution(b) {
+      let count = 0;
+      function solve(b2) {
         for (let r = 0; r < 9; r++) {
-            for (let c = 0; c < 9; c++) {
-                if (b[r][c] === 0) {
-                    for (let num = 1; num <= 9; num++) {
-                        if (isValid(b, r, c, num)) {
-                            b[r][c] = num;
-                            if (solve()) return true;
-                            b[r][c] = 0;
-                        }
-                    }
-                    return false;
+          for (let c = 0; c < 9; c++) {
+            if (b2[r][c] === 0) {
+              for (let num = 1; num <= 9; num++) {
+                if (isValid(b2, r, c, num)) {
+                  b2[r][c] = num;
+                  solve(b2);
+                  if (count > 1) return;
+                  b2[r][c] = 0;
                 }
+              }
+              return;
             }
+          }
         }
-        return true;
+        count++;
+      }
+      let copy = b.map(r => r.slice());
+      solve(copy);
+      return count === 1;
     }
 
-    solve();
+    function generatePuzzle(emptyCells) {
+      makeEmptyBoard();
+      fillBoard(board);
+      let full = board.map(r => r.slice());
+      let attempts = emptyCells;
+      while (attempts > 0) {
+        let r = Math.floor(Math.random()*9);
+        let c = Math.floor(Math.random()*9);
+        if (board[r][c] !== 0) {
+          let backup = board[r][c];
+          board[r][c] = 0;
+          let copy = board.map(r => r.slice());
+          if (hasUniqueSolution(copy)) {
+            attempts--;
+          } else {
+            board[r][c] = backup;
+          }
+        }
+      }
+      solution = full;
+    }
 
-    drawBoard(b);
-    message.textContent = "✔ 自動完成！";
-}
+    
 
+    const sudokuDiv = document.getElementById("sudoku");
+    const messageDiv = document.getElementById("message");
+    const timerSpan = document.getElementById("timer");
 
-function newGame() {
-    message.textContent = "產生中...";
-    createEmptyBoard();
+    function drawBoard() {
+      sudokuDiv.innerHTML = "";
+      for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+          let cell = document.createElement("div");
+          cell.classList.add("cell");
+          cell.dataset.r = r; cell.dataset.c = c;
+          if (board[r][c] !== 0) {
+            cell.textContent = board[r][c];
+            cell.classList.add("fixed");
+          }
+          cell.addEventListener("click", () => selectCell(cell));
+          sudokuDiv.appendChild(cell);
+        }
+      }
+    }
 
-    fillBoard(board);
+    function selectCell(cell) {
+      if (cell.classList.contains("fixed")) return;
+      clearHighlights();
+      selectedCell = cell;
+      highlightRelated(cell);
+      if (cell.textContent) highlightSameNumber(cell.textContent);
+    }
 
-    let difficulty = Number(document.getElementById("difficulty").value);
-    removeNumbers(board, difficulty);
+    function clearHighlights() {
+      sudokuDiv.querySelectorAll(".cell").forEach(c => {
+        c.classList.remove("highlight", "same-number");
+      });
+    }
 
-    drawBoard(board);
-    message.textContent = "新遊戲開始！";
-}
+    function highlightRelated(cell) {
+      const r = +cell.dataset.r, c = +cell.dataset.c;
+      sudokuDiv.querySelectorAll(".cell").forEach(c2 => {
+        let rr = +c2.dataset.r, cc = +c2.dataset.c;
+        if (rr === r || cc === c ||
+            (Math.floor(rr/3)==Math.floor(r/3) && Math.floor(cc/3)==Math.floor(c/3))) {
+          c2.classList.add("highlight");
+        }
+      });
+    }
 
-newGame();
-</script>
+    function highlightSameNumber(num) {
+      sudokuDiv.querySelectorAll(".cell").forEach(c2 => {
+        if (c2.textContent === num) c2.classList.add("same-number");
+      });
+    }
+
+    function setCellValue(r, c, val, isNote) {
+      let cell = sudokuDiv.querySelector(`.cell[data-r='${r}'][data-c='${c}']`);
+      if (!cell || cell.classList.contains("fixed")) return;
+      if (isNote) {
+        // 實作簡單筆記：顯示小字（這裡為示範，只顯主要數字）
+        cell.textContent = val;
+      } else {
+        cell.textContent = val;
+      }
+      cell.classList.add("anim");
+      historyStack.push(JSON.stringify(board));
+      redoStack = [];
+      board[r][c] = val;
+      checkComplete();
+    }
+
+    function eraseCell(r, c) {
+      let cell = sudokuDiv.querySelector(`.cell[data-r='${r}'][data-c='${c}']`);
+      if (!cell || cell.classList.contains("fixed")) return;
+      cell.textContent = "";
+      historyStack.push(JSON.stringify(board));
+      redoStack = [];
+      board[r][c] = 0;
+    }
+
+    function undo() {
+      if (historyStack.length === 0) return;
+      redoStack.push(JSON.stringify(board));
+      let prev = JSON.parse(historyStack.pop());
+      board = prev;
+      drawBoard();
+    }
+
+    function redo() {
+      if (redoStack.length === 0) return;
+      historyStack.push(JSON.stringify(board));
+      let next = JSON.parse(redoStack.pop());
+      board = next;
+      drawBoard();
+    }
+
+    function checkComplete() {
+      for (let r=0; r<9; r++)
+        for (let c=0; c<9; c++)
+          if (!board[r][c]) return;
+      // 全滿 — 再檢查是否正確
+      for (let r=0; r<9; r++)
+        for (let c=0; c<9; c++)
+          if (board[r][c] !== solution[r][c]) {
+            return;
+          }
+      winAnimation();
+      messageDiv.textContent = "🎉 恭喜完成！";
+      stopTimer();
+    }
+
+    function winAnimation() {
+      for (let i = 0; i < 100; i++) {
+        let conf = document.createElement("div");
+        conf.classList.add("confetti");
+        conf.style.left = Math.random()*100 + "vw";
+        conf.style.background = `hsl(${Math.random()*360},80%,60%)`;
+        document.body.appendChild(conf);
+        conf.style.animation = `fall ${2 + Math.random()}s ease-out`;
+        (function(el) {
+          setTimeout(() => { document.body.removeChild(el); }, 3000);
+        })(conf);
+      }
+    }
+
+    
+
+    document.getElementById("newGameBtn").addEventListener("click", () => {
+      startNewGame();
+    });
+    document.getElementById("restartBtn").addEventListener("click", () => {
+      drawBoard();
+      historyStack = [];
+      redoStack = [];
+      board = board.map(r => r.slice());
+    });
+    document.getElementById("undoBtn").addEventListener("click", undo);
+    document.getElementById("redoBtn").addEventListener("click", redo);
+    document.getElementById("solveBtn").addEventListener("click", () => {
+      board = solution.map(r => r.slice());
+      drawBoard();
+      stopTimer();
+      messageDiv.textContent = "✔ 自動完成";
+    });
+
+    document.getElementById("hintBtn").addEventListener("click", () => {
+      // 簡單提示：找到第一個空格並填上正確答案
+      for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+          if (board[r][c] === 0) {
+            setCellValue(r, c, solution[r][c], false);
+            return;
+          }
+        }
+      }
+    });
+
+    document.getElementById("themeBtn").addEventListener("click", () => {
+      themeDark = !themeDark;
+      document.body.classList.toggle("light", !themeDark);
+    });
+
+    document.getElementById("noteToggle").addEventListener("click", () => {
+      noteMode = !noteMode;
+    });
+    document.getElementById("eraseBtn").addEventListener("click", () => {
+      if (!selectedCell) return;
+      let r = +selectedCell.dataset.r, c = +selectedCell.dataset.c;
+      eraseCell(r, c);
+    });
+
+    document.querySelectorAll("#numberPad .num").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (!selectedCell) return;
+        let r = +selectedCell.dataset.r, c = +selectedCell.dataset.c;
+        setCellValue(r, c, Number(btn.textContent), noteMode);
+      });
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (!selectedCell) return;
+      let val = null;
+      if (e.key >= '1' && e.key <= '9') val = Number(e.key);
+      else if (e.key === 'Backspace' || e.key === 'Delete') val = 0;
+      if (val !== null) {
+        let r = +selectedCell.dataset.r, c = +selectedCell.dataset.c;
+        if (val === 0) eraseCell(r, c);
+        else setCellValue(r, c, val, noteMode);
+      }
+    });
+
+    
+    function startTimer() {
+      clearInterval(timerInterval);
+      startTime = Date.now();
+      timerInterval = setInterval(() => {
+        let diff = Date.now() - startTime;
+        let m = Math.floor(diff / 60000);
+        let s = Math.floor((diff % 60000) / 1000);
+        timerSpan.textContent = (m<10?'0':'')+m + ":" + (s<10?'0':'')+s;
+      }, 1000);
+    }
+    function stopTimer() {
+      clearInterval(timerInterval);
+    }
+
+    
+
+    function startNewGame() {
+      let empties = Number(document.getElementById("difficulty").value);
+      generatePuzzle(empties);
+      drawBoard();
+      historyStack = [];
+      redoStack = [];
+      messageDiv.textContent = "";
+      startTimer();
+    }
+
+    
+    startNewGame();
+
+  </script>
+
 </body>
 </html>
