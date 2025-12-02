@@ -1,4 +1,4 @@
-#<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8" />
@@ -87,12 +87,11 @@ const message = document.getElementById("message");
 
 let board = [];
 
-// 建立空白盤
 function createEmptyBoard() {
     board = Array.from({ length: 9 }, () => Array(9).fill(0));
 }
 
-// 檢查是否能放數字
+
 function isValid(board, row, col, num) {
     for (let x = 0; x < 9; x++) {
         if (board[row][x] === num) return false;
@@ -107,7 +106,7 @@ function isValid(board, row, col, num) {
     return true;
 }
 
-// 產生完整數獨
+
 function fillBoard(board) {
     for (let row = 0; row < 9; row++) {
         for (let col = 0; col < 9; col++) {
@@ -127,7 +126,7 @@ function fillBoard(board) {
     return true;
 }
 
-// 挖空產生題目
+
 function removeNumbers(board, amount) {
     let removed = 0;
     while (removed < amount) {
@@ -140,7 +139,7 @@ function removeNumbers(board, amount) {
     }
 }
 
-// 建立 UI
+
 function drawBoard(board) {
     sudokuBoard.innerHTML = "";
 
@@ -164,7 +163,7 @@ function drawBoard(board) {
     }
 }
 
-// 處理輸入
+
 function handleInput(e) {
     let cell = e.target;
     let value = cell.value;
@@ -178,7 +177,7 @@ function handleInput(e) {
     checkErrors();
 }
 
-// 檢查錯誤
+
 function checkErrors() {
     sudokuBoard.querySelectorAll("input").forEach(c => c.classList.remove("error"));
 
@@ -221,7 +220,7 @@ function inputIsValid(row, col, value) {
     return true;
 }
 
-// 將 UI 讀回 board
+
 function readBoard() {
     let b = Array.from({ length: 9 }, () => Array(9).fill(0));
     for (let r = 0; r < 9; r++)
@@ -232,7 +231,7 @@ function readBoard() {
     return b;
 }
 
-// 自動解題
+
 function solveSudoku() {
     let b = readBoard();
 
@@ -260,7 +259,7 @@ function solveSudoku() {
     message.textContent = "✔ 自動完成！";
 }
 
-// 新遊戲
+
 function newGame() {
     message.textContent = "產生中...";
     createEmptyBoard();
