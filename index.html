@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>精緻數獨遊戲 (單一文件版本)</title>
+    <title>精緻數獨遊戲 (難度可調與高亮數字)</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
         /* 全局樣式和字體設定 */
         body {
-            font-family: 'Roboto', sans-serif; /* 使用優美的字體 */
-            background-color: #f0f4f8; /* 柔和的背景色 */
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f4f8;
             color: #333;
             display: flex;
             justify-content: center;
@@ -23,15 +23,15 @@
         .container {
             background: #ffffff;
             padding: 30px;
-            border-radius: 15px; /* 圓角設計 */
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* 精緻的陰影 */
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             text-align: center;
             width: 100%;
             max-width: 500px;
         }
 
         h1 {
-            color: #4a90e2; /* 標題顏色 */
+            color: #4a90e2;
             margin-bottom: 25px;
             font-weight: 700;
         }
@@ -45,7 +45,7 @@
             max-width: 450px;
             margin: 0 auto 20px auto;
             border: 4px solid #333;
-            aspect-ratio: 1 / 1; /* 保持方形 */
+            aspect-ratio: 1 / 1;
             background-color: #eee;
         }
 
@@ -72,7 +72,7 @@
         }
         /* 每一行的第三個和第六個單元格 */
         .cell:nth-child(9n+1):nth-child(3n) {
-            border-right-width: 1px; /* 重置行尾的粗邊界 */
+            border-right-width: 1px;
             border-right-color: #ccc;
         }
         /* 每一行末尾的邊界 */
@@ -99,7 +99,7 @@
 
         /* 單元格狀態 */
         .given {
-            background-color: #ddd; /* 預設數字背景 */
+            background-color: #ddd;
             color: #2c3e50;
             cursor: default;
             font-weight: 700;
@@ -109,18 +109,53 @@
             background-color: #ffeaa7; /* 選中的單元格 */
             box-shadow: inset 0 0 0 2px #fbc531;
         }
+        
+        /* 新增：相同數字高亮 */
+        .same-number-highlight {
+            background-color: #e6e6fa; /* 淺紫色 */
+            color: #4a90e2; 
+        }
 
         .highlighted {
             background-color: #f1f8ff; /* 同行/列/宮格高亮 */
         }
 
         .error {
-            background-color: #ff7675 !important; /* 錯誤輸入的單元格，使用 !important 覆蓋其他顏色 */
+            background-color: #ff7675 !important;
             color: white;
         }
 
         .inputted {
-            color: #4a90e2; /* 用戶輸入的數字顏色 */
+            color: #4a90e2;
+        }
+
+        /* 難度選擇區塊 */
+        .difficulty-selector {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        .difficulty-selector label {
+            margin-right: 10px;
+            color: #555;
+        }
+
+        .difficulty-selector select {
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 2px solid #ccc;
+            background-color: white;
+            font-size: 1em;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .difficulty-selector select:focus {
+            border-color: #4a90e2;
         }
 
         /* 數字控制區樣式 */
@@ -212,6 +247,15 @@
 <body>
     <div class="container">
         <h1>✨ 經典數獨 ✨</h1>
+        
+        <div class="difficulty-selector">
+            <label for="difficulty">選擇難度:</label>
+            <select id="difficulty">
+                <option value="easy">簡單</option>
+                <option value="medium" selected>中等</option>
+                <option value="hard">困難</option>
+            </select>
+        </div>
 
         <div id="sudoku-grid" class="sudoku-grid">
             </div>
@@ -220,8 +264,8 @@
             </div>
 
         <div class="action-buttons">
-            <button id="new-game-btn" class="btn">重新開始</button>
-            <button id="clear-btn" class="btn clear-btn">清除</button>
+            <button id="new-game-btn" class="btn">生成新遊戲</button>
+            <button id="clear-btn" class="btn clear-btn">清除單元格</button>
             <button id="check-btn" class="btn check-btn">檢查答案</button>
         </div>
 
@@ -236,14 +280,21 @@
             const newGameBtn = document.getElementById('new-game-btn');
             const clearBtn = document.getElementById('clear-btn');
             const checkBtn = document.getElementById('check-btn');
+            const difficultySelector = document.getElementById('difficulty'); // 新增難度選擇器 DOM
+
+            // 難度對應要移除的數字數量 (挖空數)
+            const DIFFICULTY_LEVELS = {
+                'easy': 35,    // 簡單：約 46 個給定數字
+                'medium': 45,  // 中等：約 36 個給定數字
+                'hard': 55     // 困難：約 26 個給定數字 (確保唯一解，可能略有波動)
+            };
 
             let currentSudoku = []; // 遊戲的當前狀態 (9x9 陣列)
             let solvedSudoku = [];  // 遊戲的唯一解 (9x9 陣列)
             let selectedCell = null; // 當前選中的單元格
 
-            // --- I. 數獨核心演算法 (強大生成與唯一解保證) ---
+            // --- I. 數獨核心演算法 ---
 
-            // 隨機打亂陣列
             function shuffle(array) {
                 for (let i = array.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
@@ -252,17 +303,14 @@
                 return array;
             }
 
-            // 檢查數字是否可以在 (row, col) 位置放置
             function isSafe(board, row, col, num) {
-                // 檢查行
+                // 檢查行、列、3x3 九宮格
                 for (let d = 0; d < 9; d++) {
                     if (board[row][d] === num) return false;
                 }
-                // 檢查列
                 for (let r = 0; r < 9; r++) {
                     if (board[r][col] === num) return false;
                 }
-                // 檢查 3x3 九宮格
                 const boxRowStart = row - row % 3;
                 const boxColStart = col - col % 3;
                 for (let r = 0; r < 3; r++) {
@@ -273,7 +321,6 @@
                 return true;
             }
 
-            // 使用回溯法生成完整的數獨解 (強大的生成器)
             function solveSudoku(board) {
                 for (let row = 0; row < 9; row++) {
                     for (let col = 0; col < 9; col++) {
@@ -293,7 +340,6 @@
                 return true;
             }
 
-            // 尋找數獨的解 (用於保證唯一解)
             let solutionsCount = 0;
             function countSolutions(board) {
                 for (let row = 0; row < 9; row++) {
@@ -303,8 +349,8 @@
                                 if (isSafe(board, row, col, num)) {
                                     board[row][col] = num;
                                     countSolutions(board);
-                                    board[row][col] = 0; // 回溯
-                                    if (solutionsCount > 1) return; // 優化：找到第二個解就停止
+                                    board[row][col] = 0;
+                                    if (solutionsCount > 1) return;
                                 }
                             }
                             return;
@@ -314,23 +360,25 @@
                 solutionsCount++;
             }
 
-            // 生成一個數獨謎題
-            function generateSudoku(difficulty = 40) {
-                // 1. 生成完整的已解數獨
+            // --- 新增：難度調整邏輯 ---
+            function getCellsToRemove(difficulty) {
+                return DIFFICULTY_LEVELS[difficulty] || DIFFICULTY_LEVELS.medium;
+            }
+
+            function generateSudoku(difficulty) {
+                const cellsToRemove = getCellsToRemove(difficulty);
+
                 let fullBoard = Array.from({ length: 9 }, () => Array(9).fill(0));
                 solveSudoku(fullBoard);
-                solvedSudoku = JSON.parse(JSON.stringify(fullBoard)); // 儲存唯一解
+                solvedSudoku = JSON.parse(JSON.stringify(fullBoard)); 
 
-                // 2. 從中挖空，並檢查唯一解 (高強度確保破綻為零)
                 let puzzleBoard = JSON.parse(JSON.stringify(fullBoard));
-                let attempts = 0;
-                let cellsToRemove = difficulty; // 數字越小，越簡單
+                let cellsLeft = cellsToRemove;
 
-                // 隨機選取要移除的單元格
                 let allCells = Array.from({ length: 81 }, (_, i) => i);
                 shuffle(allCells);
 
-                for(let i = 0; i < allCells.length && cellsToRemove > 0; i++) {
+                for(let i = 0; i < allCells.length && cellsLeft > 0; i++) {
                     const index = allCells[i];
                     const r = Math.floor(index / 9);
                     const c = index % 9;
@@ -340,14 +388,13 @@
 
                     puzzleBoard[r][c] = 0;
                     
-                    // 檢查移除後是否還有唯一解
                     solutionsCount = 0;
                     countSolutions(JSON.parse(JSON.stringify(puzzleBoard)));
 
                     if (solutionsCount === 1) {
-                        cellsToRemove--; // 移除成功
+                        cellsLeft--;
                     } else {
-                        puzzleBoard[r][c] = temp; // 不是唯一解，放回去
+                        puzzleBoard[r][c] = temp;
                     }
                 }
 
@@ -356,9 +403,8 @@
             }
 
 
-            // --- II. 遊戲介面與互動 (精緻美化) ---
+            // --- II. 遊戲介面與互動 (包含高亮相同數字) ---
 
-            // 繪製數獨網格
             function renderGrid(board) {
                 gridElement.innerHTML = '';
                 board.flat().forEach((value, index) => {
@@ -369,20 +415,20 @@
                     cell.classList.add('cell');
                     cell.dataset.row = r;
                     cell.dataset.col = c;
+                    cell.dataset.value = value; // 儲存值以便高亮
 
                     if (value !== 0) {
                         cell.textContent = value;
-                        cell.classList.add('given'); // 初始數字
+                        cell.classList.add('given');
                     } else {
                         cell.textContent = '';
-                        cell.classList.add('input-cell'); // 可輸入的空白單元格
-                        cell.addEventListener('click', handleCellClick);
+                        cell.classList.add('input-cell');
                     }
+                    cell.addEventListener('click', handleCellClick);
                     gridElement.appendChild(cell);
                 });
             }
 
-            // 繪製數字控制按鈕
             function renderControls() {
                 controlsElement.innerHTML = '';
                 for (let i = 1; i <= 9; i++) {
@@ -394,21 +440,38 @@
                     controlsElement.appendChild(button);
                 }
             }
+            
+            // 新增：高亮所有具有相同數字的單元格
+            function highlightSameNumbers(value) {
+                document.querySelectorAll('.cell').forEach(cell => {
+                    cell.classList.remove('same-number-highlight');
+                });
 
-            // 處理單元格點擊
+                if (value !== 0 && value !== '') {
+                    document.querySelectorAll(`.cell[data-value="${value}"]`).forEach(cell => {
+                        // 確保只有非選中單元格才使用 general highlight
+                        if (!cell.classList.contains('selected')) { 
+                            cell.classList.add('same-number-highlight');
+                        }
+                    });
+                }
+            }
+
+
+            // 處理單元格點擊 (加入高亮相同數字的邏輯)
             function handleCellClick(event) {
                 const newSelected = event.target;
 
-                // 清除所有高亮和選中狀態
+                // 1. 清除所有高亮和選中狀態
                 document.querySelectorAll('.cell').forEach(cell => {
-                    cell.classList.remove('selected', 'highlighted');
+                    cell.classList.remove('selected', 'highlighted', 'same-number-highlight');
                 });
 
-                // 設定新的選中狀態
+                // 2. 設定新的選中狀態
                 selectedCell = newSelected;
                 selectedCell.classList.add('selected');
 
-                // 高亮同行、同列、同九宮格 (精緻互動)
+                // 3. 高亮同行、同列、同九宮格
                 const r = parseInt(selectedCell.dataset.row);
                 const c = parseInt(selectedCell.dataset.col);
                 
@@ -426,7 +489,13 @@
                     }
                 });
                 
-                messageArea.textContent = ''; // 清除訊息
+                // 4. 高亮所有相同的數字
+                const cellValue = selectedCell.textContent ? parseInt(selectedCell.textContent) : 0;
+                if (cellValue !== 0) {
+                     highlightSameNumbers(cellValue);
+                }
+
+                messageArea.textContent = '';
                 messageArea.className = 'message-area';
             }
 
@@ -442,51 +511,45 @@
                 selectedCell.textContent = value;
                 selectedCell.classList.add('inputted');
                 selectedCell.classList.remove('error');
+                selectedCell.dataset.value = value; // 更新 dataset.value
 
                 // 更新遊戲數據
                 currentSudoku[r][c] = value;
 
-                // 即時檢查輸入是否合法 (強大且即時的驗證)
                 checkCellForErrors();
 
-                // 檢查遊戲是否完成
+                // 點擊數字後也執行高亮相同數字
+                highlightSameNumbers(value); 
+
                 if (isGameCompleted()) {
                     showMessage('恭喜！您完成了一個完美數獨！', 'success');
                 }
             }
             
-            // 檢查所有單元格的輸入是否導致衝突
             function checkCellForErrors() {
                 // 1. 清除所有錯誤狀態
                 document.querySelectorAll('.cell').forEach(cell => {
                     cell.classList.remove('error');
                 });
                 
-                let hasConflict = false;
-
                 // 2. 重新檢查所有輸入的數字
                 for (let row = 0; row < 9; row++) {
                     for (let col = 0; col < 9; col++) {
                         const tempValue = currentSudoku[row][col];
                         
                         if (tempValue !== 0) {
-                            // 為了檢查單元格 [row][col]，我們需要暫時將其設為 0，
-                            // 然後檢查是否還有其他數字能合法放置 (這裡使用isSafe的反向邏輯)
                             currentSudoku[row][col] = 0; 
                             
                             if (!isSafe(currentSudoku, row, col, tempValue)) {
                                 document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`).classList.add('error');
-                                hasConflict = true;
                             }
                             
-                            currentSudoku[row][col] = tempValue; // 恢復值
+                            currentSudoku[row][col] = tempValue;
                         }
                     }
                 }
-                return hasConflict;
             }
             
-            // 檢查遊戲是否完成
             function isGameCompleted() {
                 for (let r = 0; r < 9; r++) {
                     for (let c = 0; c < 9; c++) {
@@ -498,7 +561,6 @@
                 return true;
             }
 
-            // 顯示訊息
             function showMessage(text, type) {
                 messageArea.textContent = text;
                 messageArea.className = `message-area ${type}-message`;
@@ -506,10 +568,11 @@
 
             // --- III. 功能按鈕邏輯 ---
 
-            // 處理「重新開始」
+            // 處理「重新開始」按鈕，現在會根據難度選擇器生成遊戲
             newGameBtn.addEventListener('click', () => {
-                initGame();
-                showMessage('新的數獨謎題已生成！', 'success');
+                const selectedDifficulty = difficultySelector.value;
+                initGame(selectedDifficulty);
+                showMessage(`已生成 ${selectedDifficulty} 難度的數獨謎題！`, 'success');
             });
 
             // 處理「清除」
@@ -521,9 +584,14 @@
                 
                 selectedCell.textContent = '';
                 selectedCell.classList.remove('inputted', 'error');
+                selectedCell.dataset.value = 0; // 清除 dataset.value
                 currentSudoku[r][c] = 0;
                 
-                // 重新檢查並清除可能因這個單元格被清除而消失的錯誤
+                // 清除相同數字高亮 (因為數字被移除了)
+                document.querySelectorAll('.cell').forEach(cell => {
+                    cell.classList.remove('same-number-highlight');
+                });
+
                 checkCellForErrors(); 
                 showMessage('單元格內容已清除。', 'error');
             });
@@ -533,7 +601,6 @@
                 let hasError = false;
                 let isComplete = true;
 
-                // 清除現有的錯誤標記
                 document.querySelectorAll('.cell').forEach(cell => cell.classList.remove('error'));
 
                 for (let r = 0; r < 9; r++) {
@@ -546,7 +613,6 @@
                             continue;
                         }
 
-                        // 檢查是否與唯一的解答一致 (最嚴格的驗證)
                         if (value !== solvedSudoku[r][c]) {
                             cellElement.classList.add('error');
                             hasError = true;
@@ -563,14 +629,22 @@
                 }
             });
 
+            // 新增：難度選擇器事件，選擇後立刻生成新遊戲
+            difficultySelector.addEventListener('change', (event) => {
+                 initGame(event.target.value);
+                 showMessage(`難度已切換為 ${event.target.options[event.target.selectedIndex].text}，新遊戲已生成！`, 'success');
+            });
+
 
             // --- IV. 遊戲初始化 ---
 
-            function initGame() {
-                // 難度設定 (45: 正常)
-                const difficultyLevel = 45; 
+            // 現在接受難度作為參數
+            function initGame(difficulty = 'medium') {
+                document.querySelectorAll('.cell').forEach(cell => {
+                    cell.classList.remove('selected', 'highlighted', 'same-number-highlight', 'error');
+                });
                 
-                generateSudoku(difficultyLevel);
+                generateSudoku(difficulty);
                 renderGrid(currentSudoku);
                 renderControls();
                 
@@ -579,8 +653,8 @@
                 messageArea.className = 'message-area';
             }
 
-            // 啟動遊戲
-            initGame();
+            // 啟動遊戲 (使用中等難度作為預設)
+            initGame('medium');
         });
     </script>
 </body>
