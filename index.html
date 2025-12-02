@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數獨遊戲</title>
+    <title>精緻數獨遊戲 (內部九宮格線加粗)</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
@@ -44,8 +44,8 @@
             width: 90%;
             max-width: 450px;
             margin: 0 auto 20px auto;
-            /* 數獨板外框線條也稍微加粗，讓整體更穩固 */
-            border: 5px solid #333; 
+            /* 調整：最外圍邊框維持 4px 粗度，保持穩重 */
+            border: 4px solid #333; 
             aspect-ratio: 1 / 1;
             background-color: #eee;
         }
@@ -64,44 +64,47 @@
         }
 
         /* ------------------------------------------------ */
-        /* --------- 核心變動：九宮格邊界加粗至 3px --------- */
+        /* --------- 核心變動：內部九宮格邊界加粗至 4px --------- */
         /* ------------------------------------------------ */
 
         /* 突出顯示 3x3 九宮格的垂直邊界 (第 3 和第 6 列的線) */
         .cell:nth-child(3n) {
-            border-right-width: 3px; /* 從 3px 加粗到 3px (保持 3px 粗度，但確保在強規則下不變細) */
+            border-right-width: 4px; /* 內部九宮格線加粗 */
             border-right-color: #333;
         }
         /* 突出顯示 3x3 九宮格的水平邊界 (第 3 和第 6 行的線) */
         .cell:nth-child(27n) {
-            border-bottom-width: 3px; /* 從 3px 加粗到 3px (保持 3px 粗度，但確保在強規則下不變細) */
+            border-bottom-width: 4px; /* 內部九宮格線加粗 */
             border-bottom-color: #333;
         }
         
-        /* 修正：當行尾是 3n 時，它應該是外框線 (4px)，而不是 3px 內邊界，但這裡讓它保持細線 */
+        /* 由於我們將整個 .sudoku-grid 的邊框設為 4px，
+           現在只需要處理邊緣單元格，防止它們被多次加粗。
+           內部九宮格的粗線 (4px) 應與最外層邊框 (4px) 匹配。 */
+
+        /* 每一行的第三個和第六個單元格 */
         .cell:nth-child(9n+1):nth-child(3n) {
-            border-right-width: 1px; 
+            border-right-width: 1px; /* 重置行尾的邊界 */
             border-right-color: #ccc;
         }
-        
-        /* 數獨板右側外框線 (比內部九宮格線更粗一點，現在是 5px) */
+        /* 每一行末尾的邊界 (右側外框線) */
         .cell:nth-child(9n) {
-            border-right-width: 5px; 
+            border-right-width: 4px; /* 保持與外框一致 */
             border-right-color: #333;
         }
-        /* 數獨板底部外框線 (比內部九宮格線更粗一點，現在是 5px) */
+        /* 數獨板最後一行的邊界 (底部外框線) */
         .cell:nth-last-child(-n+9) {
-            border-bottom-width: 5px; 
+            border-bottom-width: 4px; /* 保持與外框一致 */
             border-bottom-color: #333;
         }
-        /* 數獨板左側外框線 (現在是 5px) */
+        /* 數獨板左側外框線 */
         .cell:nth-child(9n+1) {
-            border-left-width: 5px; 
+            border-left-width: 4px; /* 保持與外框一致 */
             border-left-color: #333;
         }
-        /* 數獨板頂部外框線 (現在是 5px) */
+        /* 數獨板頂部外框線 */
         .cell:nth-child(-n+9) {
-            border-top-width: 5px; 
+            border-top-width: 4px; /* 保持與外框一致 */
             border-top-color: #333;
         }
 
@@ -292,18 +295,18 @@
             const newGameBtn = document.getElementById('new-game-btn');
             const clearBtn = document.getElementById('clear-btn');
             const checkBtn = document.getElementById('check-btn');
-            const difficultySelector = document.getElementById('difficulty'); // 新增難度選擇器 DOM
+            const difficultySelector = document.getElementById('difficulty'); 
 
             // 難度對應要移除的數字數量 (挖空數)
             const DIFFICULTY_LEVELS = {
-                'easy': 35,    // 簡單：約 46 個給定數字
-                'medium': 45,  // 中等：約 36 個給定數字
-                'hard': 55     // 困難：約 26 個給定數字 (確保唯一解，可能略有波動)
+                'easy': 35,    
+                'medium': 45,  
+                'hard': 55     
             };
 
-            let currentSudoku = []; // 遊戲的當前狀態 (9x9 陣列)
-            let solvedSudoku = [];  // 遊戲的唯一解 (9x9 陣列)
-            let selectedCell = null; // 當前選中的單元格
+            let currentSudoku = []; 
+            let solvedSudoku = [];  
+            let selectedCell = null; 
 
             // --- I. 數獨核心演算法 ---
 
@@ -316,7 +319,6 @@
             }
 
             function isSafe(board, row, col, num) {
-                // 檢查行、列、3x3 九宮格
                 for (let d = 0; d < 9; d++) {
                     if (board[row][d] === num) return false;
                 }
@@ -342,7 +344,7 @@
                                 if (isSafe(board, row, col, num)) {
                                     board[row][col] = num;
                                     if (solveSudoku(board)) return true;
-                                    board[row][col] = 0; // 回溯
+                                    board[row][col] = 0; 
                                 }
                             }
                             return false;
@@ -427,7 +429,7 @@
                     cell.dataset.row = r;
                     cell.dataset.col = c;
                     cell.dataset.value = value;
-                    cell.dataset.index = index; // 方便用索引來計算
+                    cell.dataset.index = index;
 
                     if (value !== 0) {
                         cell.textContent = value;
@@ -518,7 +520,7 @@
                 selectedCell.textContent = value;
                 selectedCell.classList.add('inputted');
                 selectedCell.classList.remove('error');
-                selectedCell.dataset.value = value; // 更新 dataset.value
+                selectedCell.dataset.value = value; 
 
                 // 更新遊戲數據
                 currentSudoku[r][c] = value;
@@ -587,10 +589,9 @@
                 
                 selectedCell.textContent = '';
                 selectedCell.classList.remove('inputted', 'error');
-                selectedCell.dataset.value = 0; // 清除 dataset.value
+                selectedCell.dataset.value = 0; 
                 currentSudoku[r][c] = 0;
                 
-                // 清除相同數字高亮
                 document.querySelectorAll('.cell').forEach(cell => {
                     cell.classList.remove('same-number-highlight');
                 });
