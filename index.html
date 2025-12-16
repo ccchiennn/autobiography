@@ -3,46 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏆 Gaming Station</title>
+    <title>🏆 全螢幕遊戲中心</title>
     <style>
-        /* CSS 樣式：全局設置 */
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f0f4f8;
-            color: #333;
+        /* 核心 CSS 調整：確保全螢幕覆蓋 */
+        html, body {
             margin: 0;
             padding: 0;
+            height: 100%; /* 佔滿整個視窗高度 */
+            overflow: hidden; /* 移除捲軸 */
+            font-family: 'Arial', sans-serif;
+            color: #333;
             text-align: center;
         }
-        header {
-            background-color: #4a90e2;
-            color: white;
-            padding: 20px 0;
-            margin-bottom: 30px;
-        }
-        .container {
-            width: 90%;
-            max-width: 900px;
-            margin: 0 auto;
+
+        /* 容器使用 Flexbox 垂直或水平排列並占滿空間 */
+        .full-screen-container {
             display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
+            height: 100vh; /* 佔滿視窗高度 */
+            width: 100vw;  /* 佔滿視窗寬度 */
             justify-content: center;
+            align-items: center;
+            background-color: #f0f4f8;
+            padding: 0;
         }
+
+        /* 遊戲卡片平均分配空間 */
         .game-card {
             background-color: white;
             border-radius: 12px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            width: 100%;
-            max-width: 400px; /* 調整卡片最大寬度 */
-            text-align: center;
+            margin: 15px;
+            flex: 1; /* 讓兩個卡片平均分配可用空間 */
+            max-width: 50%; /* 確保不會超過一半 */
+            height: 90%; /* 佔滿大部分高度 */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
         }
+        
         h2 {
             color: #4a90e2;
             border-bottom: 2px solid #e0e0e0;
             padding-bottom: 10px;
             margin-top: 0;
+            width: 80%;
         }
         button {
             padding: 10px 20px;
@@ -55,57 +61,46 @@
         }
 
         /* ------------------------------------------- */
-        /* ⚡ 反應力挑戰 */
+        /* ⚡ 反應力挑戰：美化與放大 */
         /* ------------------------------------------- */
         #reaction-area {
             background-color: #f8d7da;
-            padding: 50px 20px; /* 增加內邊距 */
+            padding: 50px 20px;
             border-radius: 10px;
             margin: 20px 0;
-            min-height: 250px; /* 放大高度 */
+            flex-grow: 1; /* 讓區域在卡片內最大化 */
+            width: 80%; 
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 28px; /* 放大字體 */
+            font-size: 28px;
             font-weight: bold;
             flex-direction: column;
-            user-select: none; /* 防止選中文字 */
+            user-select: none;
             transition: background-color 0.1s ease-out;
         }
         #reaction-button {
-            padding: 25px 50px; /* 進一步加大按鈕 */
-            font-size: 32px; /* 放大按鈕字體 */
+            padding: 25px 50px;
+            font-size: 32px;
             background-color: #6c757d;
             color: white;
             border-radius: 12px;
             width: 90%; 
             max-width: 350px;
-            box-shadow: 0 4px 0 #5a6268; /* 3D 立體感 */
+            box-shadow: 0 4px 0 #5a6268;
+            margin-bottom: 20px;
         }
         #reaction-button:active {
             box-shadow: none;
             transform: translateY(4px);
         }
         /* 狀態顏色 */
-        .reaction-ready { 
-            background-color: #ffc107; /* 黃色 */
-            color: #333;
-        }
-        .reaction-go { 
-            background-color: #ff4136 !important; /* 鮮紅色 */
-            color: white;
-        }
-        .reaction-success {
-            background-color: #28a745; /* 綠色 */
-            color: white;
-        }
-        .reaction-fail {
-            background-color: #dc3545; /* 誤點紅 */
-            color: white;
-        }
+        .reaction-ready { background-color: #ffc107; color: #333; }
+        .reaction-go { background-color: #ff4136 !important; color: white; }
+        .reaction-success { background-color: #28a745; color: white; }
+        .reaction-fail { background-color: #dc3545; color: white; }
         /* 結果文字樣式 */
         #r-high-score-display {
-            margin-top: 15px;
             font-size: 20px;
         }
 
@@ -115,8 +110,10 @@
         #tictactoe-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            width: 300px; 
-            height: 300px;
+            width: 90%; /* 盡可能佔滿卡片寬度 */
+            max-width: 350px; /* 設定最大值，防止過大 */
+            height: auto;
+            aspect-ratio: 1 / 1; /* 保持 1:1 比例 */
             margin: 20px auto;
             border: 5px solid #333;
         }
@@ -126,7 +123,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 70px; /* 放大符號 */
+            font-size: 70px;
             font-weight: bold;
             border: 3px solid #333;
             cursor: pointer;
@@ -149,12 +146,7 @@
 </head>
 <body>
 
-    <header>
-        <h1>🏆 簡約遊戲中心</h1>
-        <p>測試您的速度與智慧！</p>
-    </header>
-
-    <div class="container">
+    <div class="full-screen-container">
         
         <div class="game-card">
             <h2>⚡ 反應力挑戰</h2>
@@ -264,12 +256,11 @@
 
 
         // -----------------------------------------------------------------
-        // 2. 反應力挑戰邏輯 (Reaction Challenge Logic) - 優化
+        // 2. 反應力挑戰邏輯 (Reaction Challenge Logic)
         // -----------------------------------------------------------------
         let R_state = 'waiting'; 
         let R_timeout;
         let R_startTime;
-        // 嘗試從本地儲存取得最高分
         let R_highScore = localStorage.getItem('R_highScore') || '--'; 
         
         const R_area = document.getElementById('reaction-area');
@@ -280,26 +271,23 @@
 
         function R_resetArea() {
             R_area.className = '';
-            R_area.style.backgroundColor = ''; // 清除背景色，使用預設值
+            R_area.style.backgroundColor = ''; 
         }
 
         function R_handleStart() {
             R_resetArea();
 
             if (R_state === 'waiting') {
-                // -> 進入 Ready 狀態
                 R_state = 'ready';
                 R_area.classList.add('reaction-ready');
                 R_area.textContent = '🟡 等待... 當畫面變紅時點擊！';
                 R_button.textContent = '點擊！';
-                R_button.style.backgroundColor = '#6c757d'; // 變為灰色
+                R_button.style.backgroundColor = '#6c757d'; 
 
-                // 隨機延遲 1.5 到 5 秒
                 const delay = Math.random() * 3500 + 1500; 
                 R_timeout = setTimeout(R_handleGo, delay);
 
             } else if (R_state === 'ready') {
-                // -> 誤點！
                 clearTimeout(R_timeout);
                 R_area.classList.add('reaction-fail');
                 R_area.textContent = '❌ 太早了！ (反應時間無效)';
@@ -308,7 +296,6 @@
                 R_state = 'waiting';
 
             } else if (R_state === 'go') {
-                // -> 成功點擊
                 const R_endTime = performance.now();
                 const R_reactionTime = Math.round(R_endTime - R_startTime);
                 
@@ -318,7 +305,6 @@
                 R_button.style.backgroundColor = '#28a745';
                 R_state = 'waiting';
 
-                // 更新最高分
                 if (R_highScore === '--' || R_reactionTime < parseInt(R_highScore)) {
                     R_highScore = R_reactionTime;
                     localStorage.setItem('R_highScore', R_highScore);
@@ -328,13 +314,12 @@
         }
 
         function R_handleGo() {
-            // -> 進入 Go 狀態
             R_state = 'go';
             R_resetArea();
             R_area.classList.add('reaction-go');
             R_area.textContent = '🔴 點擊！點擊！';
-            R_button.style.backgroundColor = '#ff4136'; // 按鈕也變紅
-            R_startTime = performance.now(); // 開始計時
+            R_button.style.backgroundColor = '#ff4136'; 
+            R_startTime = performance.now(); 
         }
 
         R_button.addEventListener('click', R_handleStart);
@@ -343,8 +328,7 @@
         // 3. 網頁載入時啟動
         // -----------------------------------------------------------------
         window.onload = function() {
-            C_initializeGrid(); // 啟動圈圈叉叉
-            // 反應力挑戰初始狀態已在 HTML/CSS 中設定
+            C_initializeGrid(); 
         };
     </script>
 </body>
