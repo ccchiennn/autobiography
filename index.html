@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏆 我的超強小遊戲中心</title>
+    <title>🏆 簡約遊戲中心：反應力挑戰與圈圈叉叉</title>
     <style>
         /* CSS 樣式：全局設置 */
         body {
@@ -18,11 +18,11 @@
             background-color: #4a90e2;
             color: white;
             padding: 20px 0;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
         .container {
             width: 90%;
-            max-width: 1200px;
+            max-width: 900px;
             margin: 0 auto;
             display: flex;
             flex-wrap: wrap;
@@ -35,13 +35,8 @@
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
             padding: 20px;
             width: 100%;
-            max-width: 450px;
-            transition: transform 0.3s, box-shadow 0.3s;
-            text-align: left;
-        }
-        .game-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            max-width: 400px; /* 調整卡片最大寬度 */
+            text-align: center;
         }
         h2 {
             color: #4a90e2;
@@ -55,115 +50,74 @@
             cursor: pointer;
             border: none;
             border-radius: 5px;
-            margin-right: 10px;
+            margin-top: 10px;
             transition: background-color 0.3s;
         }
 
-        /* 數獨特定樣式 (S-sudoku) */
-        #sudoku-grid {
-            display: grid;
-            grid-template-columns: repeat(9, 1fr);
-            width: 315px; /* 9 * 35px */
-            height: 315px; /* 9 * 35px */
-            border: 3px solid #000;
-            margin: 10px auto;
-        }
-        .s-cell {
-            width: 35px;
-            height: 35px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-            font-size: 18px;
-            text-align: center;
-            line-height: 35px;
-        }
-        .s-cell input {
-            width: 100%;
-            height: 100%;
-            border: none;
-            text-align: center;
-            font-size: 18px;
-            color: #007bff;
-        }
-        .s-initial {
-            background-color: #e9ecef;
-            color: #333;
-            pointer-events: none;
-        }
-        .s-error {
-            background-color: #ffdddd !important;
-        }
-        /* 數獨 3x3 粗線 */
-        .s-cell:nth-child(3n) { border-right-width: 3px; border-right-color: #000; }
-        .s-cell:nth-child(9n) { border-right-width: 1px; border-right-color: #ccc; }
-        .s-row-border { border-bottom-width: 3px !important; border-bottom-color: #000 !important; }
-
-        /* 俄羅斯方塊特定樣式 (T-tetris) */
-        #tetris-board {
-            width: 200px; 
-            height: 400px;
-            border: 3px solid #000;
-            margin: 10px auto;
-            display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            grid-template-rows: repeat(20, 1fr);
-            background-color: #111;
-        }
-        .t-cell {
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.1);
-            box-sizing: border-box;
-            border: 1px solid rgba(0, 0, 0, 0.2);
-        }
-        .occupied { background-color: #ffc107; border-color: #ffc107; }
-
-        /* 反應力遊戲特定樣式 (R-reaction) */
+        /* ------------------------------------------- */
+        /* ⚡ 反應力挑戰：美化與放大 */
+        /* ------------------------------------------- */
         #reaction-area {
             background-color: #f8d7da;
-            padding: 30px;
-            border-radius: 8px;
-            margin: 10px 0;
-            min-height: 150px;
+            padding: 50px 20px; /* 增加內邊距 */
+            border-radius: 10px;
+            margin: 20px 0;
+            min-height: 250px; /* 放大高度 */
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 20px;
+            font-size: 28px; /* 放大字體 */
+            font-weight: bold;
             flex-direction: column;
+            user-select: none; /* 防止選中文字 */
+            transition: background-color 0.1s ease-out;
         }
-        /* 特別加大反應力挑戰按鈕 */
         #reaction-button {
-            padding: 20px 40px;
-            font-size: 28px;
-            background-color: #28a745;
+            padding: 25px 50px; /* 進一步加大按鈕 */
+            font-size: 32px; /* 放大按鈕字體 */
+            background-color: #6c757d;
             color: white;
-            border-radius: 10px;
-            width: 80%; 
-            max-width: 300px;
+            border-radius: 12px;
+            width: 90%; 
+            max-width: 350px;
+            box-shadow: 0 4px 0 #5a6268; /* 3D 立體感 */
         }
-        .reaction-go { background-color: #ff4136 !important; }
-        
-        /* 剪刀石頭布特定樣式 (P-paper-rock) */
-        .rpc-choices {
-            display: flex;
-            justify-content: space-around;
+        #reaction-button:active {
+            box-shadow: none;
+            transform: translateY(4px);
+        }
+        /* 狀態顏色 */
+        .reaction-ready { 
+            background-color: #ffc107; /* 黃色 */
+            color: #333;
+        }
+        .reaction-go { 
+            background-color: #ff4136 !important; /* 鮮紅色 */
+            color: white;
+        }
+        .reaction-success {
+            background-color: #28a745; /* 綠色 */
+            color: white;
+        }
+        .reaction-fail {
+            background-color: #dc3545; /* 誤點紅 */
+            color: white;
+        }
+        /* 結果文字樣式 */
+        #r-high-score-display {
             margin-top: 15px;
-        }
-        .rpc-choices button {
-            background-color: #17a2b8;
-            color: white;
-            padding: 15px;
             font-size: 20px;
-            border-radius: 8px;
         }
 
-        /* 圈圈叉叉特定樣式 (C-circle-cross) */
+        /* ------------------------------------------- */
+        /* ⭕️❌ 圈圈叉叉 */
+        /* ------------------------------------------- */
         #tictactoe-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            width: 270px; /* 3 * 90px */
-            height: 270px;
-            margin: 10px auto;
+            width: 300px; 
+            height: 300px;
+            margin: 20px auto;
             border: 5px solid #333;
         }
         .c-cell {
@@ -172,7 +126,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 60px;
+            font-size: 70px; /* 放大符號 */
             font-weight: bold;
             border: 3px solid #333;
             cursor: pointer;
@@ -181,23 +135,34 @@
         .c-cell:hover {
             background-color: #f0f0f0;
         }
+        #c-message {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        #c-reset-btn {
+            background-color: #007bff; 
+            color: white;
+            padding: 12px 25px;
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>🏆 我的超強小遊戲中心</h1>
-        <p>歡迎來到遊戲世界！</p>
+        <h1>🏆 簡約遊戲中心</h1>
+        <p>測試您的速度與智慧！</p>
     </header>
 
     <div class="container">
         
         <div class="game-card">
-            <h2>🧩 數獨 (Sudoku)</h2>
-            <div id="sudoku-grid"></div>
-            <p id="s-message"></p>
-            <button id="s-check-btn" style="background-color: #28a745; color: white;">檢查答案</button>
-            <button id="s-reset-btn" style="background-color: #dc3545; color: white;">重設</button>
+            <h2>⚡ 反應力挑戰</h2>
+            <div id="reaction-area">
+                點擊「開始測試」後，等待畫面變紅！
+            </div>
+            <button id="reaction-button">開始測試</button>
+            <p id="r-high-score-display">最佳反應時間: <span id="r-high-score">--</span> ms</p>
         </div>
 
         <div class="game-card">
@@ -205,36 +170,7 @@
             <div id="tictactoe-grid">
                 </div>
             <p id="c-message">玩家 X 先開始</p>
-            <button id="c-reset-btn" style="background-color: #007bff; color: white;">重新開始</button>
-        </div>
-
-        <div class="game-card">
-            <h2>🧱 俄羅斯方塊 (Tetris)</h2>
-            <div id="tetris-board">
-                </div>
-            <p>使用方向鍵 (↑↓←→) 操控。</p>
-            <button id="t-start-btn" style="background-color: #ffc107; color: #333;">開始遊戲</button>
-            <p>分數: <span id="t-score">0</span></p>
-        </div>
-
-        <div class="game-card">
-            <h2>⚡ 反應力挑戰</h2>
-            <div id="reaction-area">
-                點擊「開始」後，等待顏色變紅！
-            </div>
-            <button id="reaction-button" style="background-color: #6c757d; color: white;">開始測試</button>
-            <p>最佳反應時間: <span id="r-high-score">--</span> ms</p>
-        </div>
-
-        <div class="game-card">
-            <h2>✂️ 剪刀石頭布 (優化版)</h2>
-            <div class="rpc-choices">
-                <button onclick="playRPS('rock')">✊ 石頭</button>
-                <button onclick="playRPS('paper')">🖐️ 布</button>
-                <button onclick="playRPS('scissors')">✌️ 剪刀</button>
-            </div>
-            <p id="rpc-result">請選擇你的出拳</p>
-            <p>玩家得分: <span id="rpc-player-score">0</span> | 電腦得分: <span id="rpc-comp-score">0</span></p>
+            <button id="c-reset-btn">重新開始</button>
         </div>
 
     </div>
@@ -248,7 +184,7 @@
         // 1. 圈圈叉叉邏輯 (Tic-Tac-Toe Logic)
         // -----------------------------------------------------------------
         let C_board = ['', '', '', '', '', '', '', '', ''];
-        let C_currentPlayer = 'X'; // X 先開始
+        let C_currentPlayer = 'X'; 
         let C_gameActive = true;
         const C_winningConditions = [
             [0, 1, 2], [3, 4, 5], [6, 7, 8], // 行
@@ -314,12 +250,10 @@
             const clickedCell = event.target;
             const clickedCellIndex = parseInt(clickedCell.dataset.index);
 
-            // 確保遊戲仍在進行、單元格為空
             if (C_board[clickedCellIndex] !== '' || !C_gameActive) {
                 return;
             }
 
-            // 更新棋盤和 UI
             C_board[clickedCellIndex] = C_currentPlayer;
             clickedCell.textContent = C_currentPlayer;
 
@@ -328,212 +262,63 @@
 
         document.getElementById('c-reset-btn').addEventListener('click', C_initializeGrid);
 
-        // -----------------------------------------------------------------
-        // 2. 數獨邏輯 (Sudoku Logic)
-        // -----------------------------------------------------------------
-        const S_initialBoard = [
-            [5, 3, 0, 0, 7, 0, 0, 0, 0],
-            [6, 0, 0, 1, 9, 5, 0, 0, 0],
-            [0, 9, 8, 0, 0, 0, 0, 6, 0],
-            [8, 0, 0, 0, 6, 0, 0, 0, 3],
-            [4, 0, 0, 8, 0, 3, 0, 0, 1],
-            [7, 0, 0, 0, 2, 0, 0, 0, 6],
-            [0, 6, 0, 0, 0, 0, 2, 8, 0],
-            [0, 0, 0, 4, 1, 9, 0, 0, 5],
-            [0, 0, 0, 0, 8, 0, 0, 7, 9]
-        ];
-        const S_solutionBoard = [
-            [5, 3, 4, 6, 7, 8, 9, 1, 2],
-            [6, 7, 2, 1, 9, 5, 3, 4, 8],
-            [1, 9, 8, 3, 4, 2, 5, 6, 7],
-            [8, 5, 9, 7, 6, 1, 4, 2, 3],
-            [4, 2, 6, 8, 5, 3, 7, 9, 1],
-            [7, 1, 3, 9, 2, 4, 8, 5, 6],
-            [9, 6, 1, 5, 3, 7, 2, 8, 4],
-            [2, 8, 7, 4, 1, 9, 6, 3, 5],
-            [3, 4, 5, 2, 8, 6, 1, 7, 9]
-        ];
-
-        function S_initializeGrid() {
-            const grid = document.getElementById('sudoku-grid');
-            grid.innerHTML = '';
-            for (let r = 0; r < 9; r++) {
-                for (let c = 0; c < 9; c++) {
-                    const cell = document.createElement('div');
-                    cell.classList.add('s-cell');
-                    cell.dataset.row = r;
-                    cell.dataset.col = c;
-                    
-                    if ((r + 1) % 3 === 0 && r !== 8) {
-                        cell.classList.add('s-row-border');
-                    }
-
-                    const value = S_initialBoard[r][c];
-                    if (value !== 0) {
-                        cell.textContent = value;
-                        cell.classList.add('s-initial');
-                    } else {
-                        const input = document.createElement('input');
-                        input.type = 'text';
-                        input.maxLength = 1;
-                        input.pattern = '[1-9]';
-                        input.addEventListener('input', function() {
-                            this.value = this.value.replace(/[^1-9]/g, '');
-                            cell.classList.remove('s-error');
-                            document.getElementById('s-message').textContent = '';
-                        });
-                        cell.appendChild(input);
-                    }
-                    grid.appendChild(cell);
-                }
-            }
-        }
-
-        function S_checkSudoku() {
-            let isCompleted = true;
-            let isCorrect = true;
-            document.querySelectorAll('.s-cell').forEach(cell => cell.classList.remove('s-error'));
-            const message = document.getElementById('s-message');
-
-            for (let r = 0; r < 9; r++) {
-                for (let c = 0; c < 9; c++) {
-                    const cell = document.querySelector(`.s-cell[data-row="${r}"][data-col="${c}"]`);
-                    let currentValue = S_initialBoard[r][c];
-
-                    if (currentValue === 0) {
-                        const input = cell.querySelector('input');
-                        if (input && input.value) {
-                            currentValue = parseInt(input.value);
-                        } else {
-                            isCompleted = false;
-                            continue;
-                        }
-                    }
-
-                    if (currentValue !== 0 && currentValue !== S_solutionBoard[r][c]) {
-                        isCorrect = false;
-                        if (!cell.classList.contains('s-initial')) {
-                            cell.classList.add('s-error');
-                        }
-                    }
-                }
-            }
-
-            if (!isCompleted) {
-                message.style.color = 'orange';
-                message.textContent = '❌ 請先填滿所有空格！';
-            } else if (isCorrect) {
-                message.style.color = 'green';
-                message.textContent = '🎉 恭喜！數獨解答完全正確！';
-            } else {
-                message.style.color = 'red';
-                message.textContent = '⚠️ 答案有誤！請檢查標紅色的格子。';
-            }
-        }
-        
-        document.getElementById('s-check-btn').addEventListener('click', S_checkSudoku);
-        document.getElementById('s-reset-btn').addEventListener('click', () => {
-            S_initializeGrid();
-            document.getElementById('s-message').textContent = '';
-        });
 
         // -----------------------------------------------------------------
-        // 3. 俄羅斯方塊邏輯 (Tetris Logic) - 簡化版
-        // -----------------------------------------------------------------
-        const T_COLS = 10;
-        const T_ROWS = 20;
-        let T_grid = [];
-        let T_score = 0;
-        let T_gameLoop;
-        let T_isGameOver = false;
-
-        function T_initializeBoard() {
-            const boardElement = document.getElementById('tetris-board');
-            boardElement.innerHTML = '';
-            T_grid = Array(T_ROWS).fill(0).map(() => Array(T_COLS).fill(0));
-            T_score = 0;
-            document.getElementById('t-score').textContent = T_score;
-
-            for (let r = 0; r < T_ROWS; r++) {
-                for (let c = 0; c < T_COLS; c++) {
-                    const cell = document.createElement('div');
-                    cell.classList.add('t-cell');
-                    boardElement.appendChild(cell);
-                }
-            }
-        }
-
-        function T_draw() {
-            const cells = document.querySelectorAll('#tetris-board .t-cell');
-            for (let r = 0; r < T_ROWS; r++) {
-                for (let c = 0; c < T_COLS; c++) {
-                    const index = r * T_COLS + c;
-                    cells[index].classList.remove('occupied');
-                    if (T_grid[r][c] === 1) {
-                        cells[index].classList.add('occupied');
-                    }
-                }
-            }
-        }
-
-        function T_startGame() {
-            if (T_gameLoop) clearInterval(T_gameLoop);
-            T_initializeBoard();
-            T_isGameOver = false;
-            
-            document.getElementById('t-score').textContent = "遊戲啟動，但完整邏輯需更多程式碼...";
-            
-            T_gameLoop = setInterval(() => {
-                if (Math.random() < 0.1) {
-                    T_score += 10;
-                    document.getElementById('t-score').textContent = T_score;
-                }
-                T_draw(); 
-            }, 1000);
-        }
-
-        document.getElementById('t-start-btn').addEventListener('click', T_startGame);
-
-        // -----------------------------------------------------------------
-        // 4. 反應力挑戰邏輯 (Reaction Challenge Logic)
+        // 2. 反應力挑戰邏輯 (Reaction Challenge Logic) - 優化
         // -----------------------------------------------------------------
         let R_state = 'waiting'; 
         let R_timeout;
         let R_startTime;
-        let R_highScore = localStorage.getItem('R_highScore') || '--';
+        // 嘗試從本地儲存取得最高分
+        let R_highScore = localStorage.getItem('R_highScore') || '--'; 
         
         const R_area = document.getElementById('reaction-area');
         const R_button = document.getElementById('reaction-button');
         const R_highScoreSpan = document.getElementById('r-high-score');
+        
         R_highScoreSpan.textContent = R_highScore;
 
+        function R_resetArea() {
+            R_area.className = '';
+            R_area.style.backgroundColor = ''; // 清除背景色，使用預設值
+        }
+
         function R_handleStart() {
+            R_resetArea();
+
             if (R_state === 'waiting') {
+                // -> 進入 Ready 狀態
                 R_state = 'ready';
-                R_area.style.backgroundColor = '#ffc107'; 
-                R_area.textContent = '等待... 當它變紅時點擊！';
-                R_button.textContent = '點擊';
-                R_button.style.backgroundColor = '#6c757d';
-                
+                R_area.classList.add('reaction-ready');
+                R_area.textContent = '🟡 等待... 當畫面變紅時點擊！';
+                R_button.textContent = '點擊！';
+                R_button.style.backgroundColor = '#6c757d'; // 變為灰色
+
+                // 隨機延遲 1.5 到 5 秒
                 const delay = Math.random() * 3500 + 1500; 
                 R_timeout = setTimeout(R_handleGo, delay);
 
             } else if (R_state === 'ready') {
+                // -> 誤點！
                 clearTimeout(R_timeout);
-                R_area.style.backgroundColor = '#dc3545'; 
-                R_area.textContent = '❌ 太早了！ (罰時: 500ms)';
+                R_area.classList.add('reaction-fail');
+                R_area.textContent = '❌ 太早了！ (反應時間無效)';
                 R_button.textContent = '重新開始';
+                R_button.style.backgroundColor = '#dc3545';
                 R_state = 'waiting';
 
             } else if (R_state === 'go') {
+                // -> 成功點擊
                 const R_endTime = performance.now();
                 const R_reactionTime = Math.round(R_endTime - R_startTime);
                 
-                R_area.style.backgroundColor = '#28a745'; 
+                R_area.classList.add('reaction-success');
                 R_area.textContent = `✅ 反應時間：${R_reactionTime} ms`;
                 R_button.textContent = '重新開始';
+                R_button.style.backgroundColor = '#28a745';
                 R_state = 'waiting';
 
+                // 更新最高分
                 if (R_highScore === '--' || R_reactionTime < parseInt(R_highScore)) {
                     R_highScore = R_reactionTime;
                     localStorage.setItem('R_highScore', R_highScore);
@@ -543,66 +328,23 @@
         }
 
         function R_handleGo() {
+            // -> 進入 Go 狀態
             R_state = 'go';
-            R_area.style.backgroundColor = '#ff4136'; 
+            R_resetArea();
+            R_area.classList.add('reaction-go');
             R_area.textContent = '🔴 點擊！點擊！';
-            R_startTime = performance.now();
+            R_button.style.backgroundColor = '#ff4136'; // 按鈕也變紅
+            R_startTime = performance.now(); // 開始計時
         }
 
         R_button.addEventListener('click', R_handleStart);
 
         // -----------------------------------------------------------------
-        // 5. 剪刀石頭布邏輯 (Rock-Paper-Scissors Logic)
-        // -----------------------------------------------------------------
-        let RPC_playerScore = 0;
-        let RPC_compScore = 0;
-        
-        const RPC_choices = ['rock', 'paper', 'scissors'];
-        const RPC_result = document.getElementById('rpc-result');
-        const RPC_playerScoreSpan = document.getElementById('rpc-player-score');
-        const RPC_compScoreSpan = document.getElementById('rpc-comp-score');
-
-        function RPC_getComputerChoice() {
-            const randomIndex = Math.floor(Math.random() * 3);
-            return RPC_choices[randomIndex];
-        }
-
-        function RPC_translate(choice) {
-            if (choice === 'rock') return '✊ 石頭';
-            if (choice === 'paper') return '🖐️ 布';
-            return '✌️ 剪刀';
-        }
-
-        window.playRPS = function(playerChoice) {
-            const computerChoice = RPC_getComputerChoice();
-            let resultMessage = '';
-
-            if (playerChoice === computerChoice) {
-                resultMessage = `平手！ (你: ${RPC_translate(playerChoice)} vs. 電腦: ${RPC_translate(computerChoice)})`;
-            } else if (
-                (playerChoice === 'rock' && computerChoice === 'scissors') ||
-                (playerChoice === 'paper' && computerChoice === 'rock') ||
-                (playerChoice === 'scissors' && computerChoice === 'paper')
-            ) {
-                resultMessage = `恭喜，你贏了！ (你: ${RPC_translate(playerChoice)} vs. 電腦: ${RPC_translate(computerChoice)})`;
-                RPC_playerScore++;
-            } else {
-                resultMessage = `遺憾，電腦贏了！ (你: ${RPC_translate(playerChoice)} vs. 電腦: ${RPC_translate(computerChoice)})`;
-                RPC_compScore++;
-            }
-
-            RPC_result.textContent = resultMessage;
-            RPC_playerScoreSpan.textContent = RPC_playerScore;
-            RPC_compScoreSpan.textContent = RPC_compScore;
-        }
-
-        // -----------------------------------------------------------------
-        // 6. 網頁載入時啟動
+        // 3. 網頁載入時啟動
         // -----------------------------------------------------------------
         window.onload = function() {
-            S_initializeGrid();
             C_initializeGrid(); // 啟動圈圈叉叉
-            T_initializeBoard();
+            // 反應力挑戰初始狀態已在 HTML/CSS 中設定
         };
     </script>
 </body>
