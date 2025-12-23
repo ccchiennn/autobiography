@@ -1,259 +1,374 @@
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>遊戲廳 - 反應力大師</title>
+    <title>遊戲廳</title>
     <style>
         :root {
-            --bg: #0a0e17;
-            --card: rgba(30, 41, 59, 0.7);
-            --primary: #38bdf8;
-            --success: #22c55e;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --text: #f8fafc;
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --fever: #ff00de;
+            --success: #00ff88;
+            --danger: #ff416c;
+            --bg: #0b0e14;
         }
 
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background-color: var(--bg);
-            background-image: radial-gradient(circle at top right, #1e293b, #0a0e17);
-            color: var(--text);
+            color: white;
             margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
-        /* 頂部導覽列：毛玻璃效果 */
+        /* 全域導覽與分數 */
         header {
             width: 100%;
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(12px);
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(10px);
             padding: 15px 0;
-            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            z-index: 100;
+            display: none; /* 初始隱藏，進入遊戲後顯示 */
         }
 
-        h1 { margin: 0; font-size: 2rem; letter-spacing: 6px; text-transform: uppercase; color: var(--primary); }
-
-        .top-stats {
+        .top-nav {
             display: flex;
-            justify-content: center;
-            gap: 25px;
-            margin-top: 10px;
+            justify-content: space-around;
+            align-items: center;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
-        .stat-item {
-            font-size: 1.1rem;
+        .coin-badge {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 15px;
+            border-radius: 20px;
+            color: #ffd700;
             font-weight: bold;
-            color: var(--warning);
+            font-size: 1.2rem;
         }
 
-        .nav { display: flex; justify-content: center; gap: 12px; margin: 15px 0; }
-        .nav-btn {
-            background: rgba(255,255,255,0.05); border: 1px solid var(--primary);
-            color: var(--primary); padding: 10px 20px; border-radius: 30px;
-            cursor: pointer; transition: 0.3s; font-weight: bold;
-        }
-        .nav-btn.active { background: var(--primary); color: var(--bg); box-shadow: 0 0 15px var(--primary); }
-
-        /* 遊戲主體容器 */
-        .game-container {
-            width: 95%;
-            max-width: 600px;
-            flex-grow: 1;
+        /* 主畫面 Welcome Screen */
+        #welcome-screen {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, #1e293b 0%, #0b0e14 100%);
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding-bottom: 50px;
+            align-items: center;
+            z-index: 2000;
         }
 
-        .game-box { display: none; width: 100%; }
-        .game-box.active { display: block; animation: zoomIn 0.3s ease-out; }
+        #welcome-screen h1 {
+            font-size: 4rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+        }
 
-        @keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .start-btn {
+            background: linear-gradient(45deg, var(--secondary), var(--primary));
+            border: none;
+            padding: 15px 40px;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
+            transition: 0.3s;
+        }
 
-        /* --- 反應挑戰：強化版樣式 --- */
-        #reaction-stage {
+        .start-btn:hover { transform: scale(1.1); box-shadow: 0 0 30px rgba(0, 242, 254, 0.8); }
+
+        /* 遊戲區域 */
+        .game-container {
+            width: 90%;
+            max-width: 600px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .game-box {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            display: none;
+            text-align: center;
+        }
+
+        .game-box.active { display: block; animation: slideUp 0.5s ease; }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- 反應力挑戰：超大字體與光影 --- */
+        #react-pad {
             width: 100%;
-            height: 400px;
-            border-radius: 24px;
-            background: var(--card);
-            border: 2px solid rgba(255,255,255,0.1);
+            height: 350px;
+            border-radius: 20px;
+            background: #334155;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            transition: background 0.1s, transform 0.1s, box-shadow 0.3s;
-            position: relative;
-            overflow: hidden;
+            transition: 0.1s;
         }
 
-        #reaction-stage:active { transform: scale(0.98); }
+        .react-title { font-size: 4rem; font-weight: 900; margin: 0; }
+        .react-sub { font-size: 1.2rem; opacity: 0.7; margin-top: 20px; }
 
-        .main-instruction {
-            font-size: 3.5rem; /* 字體加大 */
-            font-weight: 900;
-            text-align: center;
-            pointer-events: none;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            margin: 0;
-        }
-
-        .sub-instruction {
-            font-size: 1.2rem;
-            margin-top: 20px;
-            color: rgba(255,255,255,0.6);
-            pointer-events: none;
-        }
-
-        .rank-badge {
+        /* --- 賽馬遊戲：動畫優化 --- */
+        .track { background: #111; padding: 20px; border-radius: 15px; margin-top: 20px; }
+        .lane { height: 60px; border-bottom: 1px solid #333; position: relative; display: flex; align-items: center; }
+        .horse {
+            font-size: 2.5rem;
             position: absolute;
-            bottom: 30px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--warning);
-            text-transform: uppercase;
-            opacity: 0;
-            transition: 0.3s;
+            left: 0;
+            transition: left 0.1s linear;
+        }
+        .running { animation: horseMove 0.4s infinite ease-in-out; }
+        @keyframes horseMove { 
+            0%, 100% { transform: translateY(0) rotate(0); } 
+            50% { transform: translateY(-8px) rotate(5deg); } 
         }
 
-        /* 閃爍動畫 (失敗時) */
-        .flash-red { animation: flashRed 0.4s; }
-        @keyframes flashRed { 
-            0%, 100% { background: var(--card); } 
-            50% { background: var(--danger); } 
+        /* --- 投籃遊戲：翻倍時間 --- */
+        #court {
+            width: 100%; height: 350px; background: #000; position: relative;
+            border-radius: 20px; overflow: hidden; border: 3px solid #333;
         }
+        #court.fever { border-color: var(--fever); box-shadow: inset 0 0 50px var(--fever); }
+        #hoop { width: 60px; height: 10px; background: var(--danger); position: absolute; top: 40px; left: 50%; border-radius: 5px; }
+        #ball { width: 30px; height: 30px; background: #f97316; border-radius: 50%; position: absolute; bottom: 10px; left: 50%; display: none; }
+        .timer-txt { font-size: 2.5rem; font-weight: bold; margin-bottom: 15px; }
+        .fever-msg { color: var(--fever); font-weight: bold; animation: pulse 0.5s infinite; display: none; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } }
+
+        /* 導覽按鈕樣式 */
+        .nav-btn {
+            background: transparent; border: 2px solid var(--primary);
+            color: var(--primary); padding: 10px 20px; border-radius: 25px;
+            cursor: pointer; font-weight: bold; transition: 0.3s;
+        }
+        .nav-btn.active { background: var(--primary); color: #000; }
 
     </style>
 </head>
 <body>
 
-<header>
-    <h1>遊戲廳</h1>
-    <div class="top-stats">
-        <div class="stat-item">💰 <span id="coin-val">0</span></div>
-        <div class="stat-item">⚡ 紀錄: <span id="best-val">--</span>ms</div>
+    <div id="welcome-screen">
+        <h1>Welcome to<br>Gamestation</h1>
+        <button class="start-btn" onclick="enterGame()">進入遊戲廳</button>
     </div>
-    <div class="nav">
-        <button class="nav-btn active" onclick="tab('react', this)">反應挑戰</button>
-        <button class="nav-btn" onclick="tab('race', this)">瘋狂賽馬</button>
-        <button class="nav-btn" onclick="tab('hoop', this)">投籃比賽</button>
-    </div>
-</header>
 
-<div class="game-container">
-    <div id="react" class="game-box active">
-        <div id="reaction-stage" onclick="triggerReact()">
-            <p id="main-text" class="main-instruction">READY?</p>
-            <p id="sub-text" class="sub-instruction">點擊區塊開始測試</p>
-            <div id="rank-text" class="rank-badge">GODLIKE!</div>
+    <header id="main-header">
+        <div class="top-nav">
+            <button class="nav-btn active" onclick="showTab('react', this)">反應挑戰</button>
+            <button class="nav-btn" onclick="showTab('race', this)">瘋狂賽馬</button>
+            <button class="nav-btn" onclick="showTab('hoop', this)">投籃計時賽</button>
+            <div class="coin-badge">💰 <span id="coin-val">0</span></div>
+        </div>
+    </header>
+
+    <div class="game-container" id="game-container">
+        <div id="react" class="game-box active">
+            <div id="react-pad" onclick="handleReact()">
+                <p class="react-title" id="react-main">START</p>
+                <p class="react-sub" id="react-sub">點擊此處開始測試</p>
+            </div>
+            <p style="margin-top:20px;">最高紀錄: <span id="best-react">--</span> ms</p>
+        </div>
+
+        <div id="race" class="game-box">
+            <h2 style="color:var(--primary)">動態賽馬場</h2>
+            <div style="margin-bottom:15px;">
+                下注: <input type="number" id="bet-val" value="10" min="1" style="width:60px; padding:5px;"> 
+                選馬: <select id="horse-select" style="padding:5px;"><option value="0">🐎 1號</option><option value="1">🦄 2號</option><option value="2">🦓 3號</option></select>
+                <button onclick="startRace()" class="start-btn" style="padding:5px 20px; font-size:1rem; margin-left:10px;">開賽</button>
+            </div>
+            <div class="track">
+                <div class="lane"><div class="horse" id="h0">🐎</div></div>
+                <div class="lane"><div class="horse" id="h1">🦄</div></div>
+                <div class="lane"><div class="horse" id="h2">🦓</div></div>
+            </div>
+        </div>
+
+        <div id="hoop" class="game-box">
+            <div class="timer-txt" id="timer">30s</div>
+            <div class="fever-msg" id="fever-txt">🔥 FEVER TIME! 2X GOLD 🔥</div>
+            <div id="court" onclick="shootBall(event)">
+                <div id="hoop"></div>
+                <div id="ball"></div>
+                <div id="hoop-overlay" style="position:absolute; inset:0; background:rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center;">
+                    <button class="start-btn" onclick="startHoopGame()">開始挑戰</button>
+                </div>
+            </div>
+            <p>最後 10 秒進球價值翻倍！</p>
         </div>
     </div>
 
-    <div id="race" class="game-box" style="text-align: center;"><h2>賽馬模式製作中...</h2></div>
-    <div id="hoop" class="game-box" style="text-align: center;"><h2>投籃模式製作中...</h2></div>
-</div>
+    <script>
+        let coins = parseInt(localStorage.getItem('coins')) || 100;
+        let bestReact = localStorage.getItem('bestReact') || '--';
 
-<script>
-    let coins = parseInt(localStorage.getItem('coins')) || 0;
-    let best = localStorage.getItem('bestReact') || '--';
-    let state = 'idle'; // idle, waiting, go
-    let timer, startTime;
-
-    const stage = document.getElementById('reaction-stage');
-    const mainTxt = document.getElementById('main-text');
-    const subTxt = document.getElementById('sub-text');
-    const rankTxt = document.getElementById('rank-text');
-
-    function syncData() {
-        document.getElementById('coin-val').innerText = coins;
-        document.getElementById('best-val').innerText = best;
-        localStorage.setItem('coins', coins);
-        localStorage.setItem('bestReact', best);
-    }
-    syncData();
-
-    function tab(id, btn) {
-        document.querySelectorAll('.game-box').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        btn.classList.add('active');
-    }
-
-    // --- 反應力挑戰核心優化邏輯 ---
-    function triggerReact() {
-        if (state === 'idle') {
-            startTest();
-        } else if (state === 'waiting') {
-            tooEarly();
-        } else if (state === 'go') {
-            success();
+        function updateUI() {
+            document.getElementById('coin-val').innerText = coins;
+            document.getElementById('best-react').innerText = bestReact;
+            localStorage.setItem('coins', coins);
+            localStorage.setItem('bestReact', bestReact);
         }
-    }
 
-    function startTest() {
-        state = 'waiting';
-        stage.style.background = 'var(--warning)';
-        stage.style.boxShadow = '0 0 40px rgba(245, 158, 11, 0.3)';
-        mainTxt.innerText = 'WAIT...';
-        mainTxt.style.color = '#fff';
-        subTxt.innerText = '看到變色瞬間點擊！';
-        rankTxt.style.opacity = '0';
-        
-        const delay = Math.random() * 3000 + 1500;
-        timer = setTimeout(() => {
-            state = 'go';
-            stage.style.background = 'var(--success)';
-            stage.style.boxShadow = '0 0 60px rgba(34, 197, 94, 0.5)';
-            mainTxt.innerText = 'GO!!';
-            startTime = Date.now();
-        }, delay);
-    }
+        function enterGame() {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('main-header').style.display = 'block';
+            document.getElementById('game-container').style.display = 'block';
+            updateUI();
+        }
 
-    function tooEarly() {
-        clearTimeout(timer);
-        state = 'idle';
-        stage.classList.add('flash-red');
-        setTimeout(() => stage.classList.remove('flash-red'), 400);
-        stage.style.background = 'var(--card)';
-        stage.style.boxShadow = 'none';
-        mainTxt.innerText = 'TOO EARLY!';
-        mainTxt.style.color = 'var(--danger)';
-        subTxt.innerText = '點擊重試';
-    }
+        function showTab(id, btn) {
+            document.querySelectorAll('.game-box').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            btn.classList.add('active');
+        }
 
-    function success() {
-        const diff = Date.now() - startTime;
-        state = 'idle';
-        stage.style.background = 'var(--card)';
-        stage.style.boxShadow = 'none';
-        mainTxt.innerText = diff + 'ms';
-        mainTxt.style.color = 'var(--primary)';
-        subTxt.innerText = '點擊再次挑戰';
+        // --- 反應力邏輯 ---
+        let rState = 'idle', rTimer, rStart;
+        function handleReact() {
+            const pad = document.getElementById('react-pad');
+            const main = document.getElementById('react-main');
+            if (rState === 'idle') {
+                rState = 'wait';
+                pad.style.background = '#f59e0b';
+                main.innerText = 'WAIT...';
+                rTimer = setTimeout(() => {
+                    rState = 'go';
+                    pad.style.background = '#10b981';
+                    main.innerText = 'GO!!';
+                    rStart = Date.now();
+                }, Math.random() * 3000 + 2000);
+            } else if (rState === 'wait') {
+                clearTimeout(rTimer);
+                rState = 'idle';
+                pad.style.background = '#ef4444';
+                main.innerText = 'TOO EARLY!';
+            } else if (rState === 'go') {
+                const diff = Date.now() - rStart;
+                rState = 'idle';
+                pad.style.background = '#334155';
+                main.innerText = diff + 'ms';
+                if (bestReact === '--' || diff < bestReact) bestReact = diff;
+                coins += (diff < 300 ? 20 : 5);
+                updateUI();
+            }
+        }
 
-        // 評價系統
-        let rank = '';
-        let gain = 2;
-        if (diff < 180) { rank = 'Godlike ⚡'; gain = 50; }
-        else if (diff < 250) { rank = 'Legendary 🔥'; gain = 20; }
-        else if (diff < 350) { rank = 'Excellent ✨'; gain = 10; }
-        else { rank = 'Average 🐢'; gain = 5; }
+        // --- 賽馬邏輯 ---
+        let isRacing = false;
+        function startRace() {
+            const bet = parseInt(document.getElementById('bet-val').value);
+            if (isRacing || coins < bet) return alert("金幣不足或正在比賽！");
+            coins -= bet; updateUI(); isRacing = true;
+            
+            const horses = [0, 0, 0];
+            document.querySelectorAll('.horse').forEach(h => h.classList.add('running'));
+            
+            const timer = setInterval(() => {
+                for(let i=0; i<3; i++) {
+                    horses[i] += Math.random() * 3;
+                    document.getElementById('h'+i).style.left = horses[i] + '%';
+                    if (horses[i] >= 90) {
+                        clearInterval(timer);
+                        isRacing = false;
+                        document.querySelectorAll('.horse').forEach(h => h.classList.remove('running'));
+                        const win = (i == document.getElementById('horse-select').value);
+                        if (win) { coins += bet * 3; alert("你贏了！獲得 " + (bet*3) + " 金幣"); }
+                        else { alert("輸了！冠軍是 " + (i+1) + " 號馬"); }
+                        updateUI();
+                        setTimeout(() => horses.forEach((_,idx) => document.getElementById('h'+idx).style.left = '0'), 1000);
+                    }
+                }
+            }, 50);
+        }
 
-        rankTxt.innerText = rank;
-        rankTxt.style.opacity = '1';
-        
-        coins += gain;
-        if (best === '--' || diff < best) best = diff;
-        syncData();
-    }
-</script>
+        // --- 投籃挑戰邏輯 ---
+        let hoopActive = false, hoopTime = 30, hoopInt, isFever = false;
+        function startHoopGame() {
+            document.getElementById('hoop-overlay').style.display = 'none';
+            hoopActive = true; hoopTime = 30; isFever = false;
+            document.getElementById('court').classList.remove('fever');
+            document.getElementById('fever-txt').style.display = 'none';
+            
+            hoopInt = setInterval(() => {
+                hoopTime--;
+                document.getElementById('timer').innerText = hoopTime + 's';
+                if (hoopTime <= 10) {
+                    isFever = true;
+                    document.getElementById('court').classList.add('fever');
+                    document.getElementById('fever-txt').style.display = 'block';
+                    document.getElementById('timer').style.color = 'var(--fever)';
+                }
+                if (hoopTime <= 0) {
+                    clearInterval(hoopInt);
+                    hoopActive = false;
+                    document.getElementById('hoop-overlay').style.display = 'flex';
+                    document.getElementById('hoop-overlay').innerHTML = `<h2>時間到！</h2><button class="start-btn" onclick="startHoopGame()">再玩一次</button>`;
+                }
+            }, 1000);
+        }
 
+        let hoopX = 50, hoopDir = 2;
+        setInterval(() => {
+            hoopX += hoopDir;
+            if (hoopX > 80 || hoopX < 20) hoopDir *= -1;
+            document.getElementById('hoop').style.left = hoopX + '%';
+        }, 30);
+
+        let shooting = false;
+        function shootBall(e) {
+            if (!hoopActive || shooting) return;
+            shooting = true;
+            const ball = document.getElementById('ball');
+            const court = document.getElementById('court').getBoundingClientRect();
+            const targetX = ((e.clientX - court.left) / court.width) * 100;
+            
+            ball.style.display = 'block';
+            let bY = 10, bX = 50, bSize = 30;
+            const drift = (targetX - 50) / 15;
+
+            const anim = setInterval(() => {
+                bY += 10; bX += drift; bSize -= 0.5;
+                ball.style.bottom = bY + 'px';
+                ball.style.left = bX + '%';
+                ball.style.width = bSize + 'px';
+                ball.style.height = bSize + 'px';
+
+                if (bY > 300) {
+                    clearInterval(anim);
+                    if (Math.abs(bX - hoopX) < 8) {
+                        coins += isFever ? 20 : 10;
+                        updateUI();
+                    }
+                    ball.style.display = 'none';
+                    shooting = false;
+                }
+            }, 20);
+        }
+    </script>
 </body>
 </html>
