@@ -3,333 +3,286 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏆 全螢幕遊戲中心</title>
+    <title>全能遊戲王：三合一遊戲廳</title>
     <style>
-        /* 核心 CSS 調整：確保全螢幕覆蓋 */
-        html, body {
+        :root {
+            --primary: #ff4757;
+            --secondary: #2f3542;
+            --accent: #ffa502;
+            --grass: #2ed573;
+            --court: #e67e22;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--secondary);
+            color: white;
             margin: 0;
-            padding: 0;
-            height: 100%; /* 佔滿整個視窗高度 */
-            overflow: hidden; /* 移除捲軸 */
-            font-family: 'Arial', sans-serif;
-            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 導覽列 */
+        .nav {
+            display: flex;
+            width: 100%;
+            background: #1e222d;
+            justify-content: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 10px 0;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: #a4b0be;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .nav-btn.active {
+            color: white;
+            border-bottom-color: var(--primary);
+        }
+
+        .game-section {
+            display: none;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
             text-align: center;
         }
 
-        /* 容器使用 Flexbox 垂直或水平排列並占滿空間 */
-        .full-screen-container {
-            display: flex;
-            height: 100vh; /* 佔滿視窗高度 */
-            width: 100vw;  /* 佔滿視窗寬度 */
-            justify-content: center;
-            align-items: center;
-            background-color: #f0f4f8;
-            padding: 0;
-        }
+        .game-section.active { display: block; }
 
-        /* 遊戲卡片平均分配空間 */
-        .game-card {
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin: 15px;
-            flex: 1; /* 讓兩個卡片平均分配可用空間 */
-            max-width: 50%; /* 確保不會超過一半 */
-            height: 90%; /* 佔滿大部分高度 */
-            display: flex;
-            flex-direction: column;
-            justify-content: space-around;
-            align-items: center;
-        }
-        
-        h2 {
-            color: #4a90e2;
-            border-bottom: 2px solid #e0e0e0;
-            padding-bottom: 10px;
-            margin-top: 0;
-            width: 80%;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            margin-top: 10px;
-            transition: background-color 0.3s;
-        }
-
-        /* ------------------------------------------- */
-        /* ⚡ 反應力挑戰：美化與放大 */
-        /* ------------------------------------------- */
-        #reaction-area {
-            background-color: #f8d7da;
-            padding: 50px 20px;
-            border-radius: 10px;
+        .total-score {
+            background: rgba(0,0,0,0.3);
+            padding: 10px 30px;
+            border-radius: 20px;
             margin: 20px 0;
-            flex-grow: 1; /* 讓區域在卡片內最大化 */
-            width: 80%; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 28px;
+            font-size: 1.5rem;
+            color: var(--accent);
             font-weight: bold;
-            flex-direction: column;
-            user-select: none;
-            transition: background-color 0.1s ease-out;
-        }
-        #reaction-button {
-            padding: 25px 50px;
-            font-size: 32px;
-            background-color: #6c757d;
-            color: white;
-            border-radius: 12px;
-            width: 90%; 
-            max-width: 350px;
-            box-shadow: 0 4px 0 #5a6268;
-            margin-bottom: 20px;
-        }
-        #reaction-button:active {
-            box-shadow: none;
-            transform: translateY(4px);
-        }
-        /* 狀態顏色 */
-        .reaction-ready { background-color: #ffc107; color: #333; }
-        .reaction-go { background-color: #ff4136 !important; color: white; }
-        .reaction-success { background-color: #28a745; color: white; }
-        .reaction-fail { background-color: #dc3545; color: white; }
-        /* 結果文字樣式 */
-        #r-high-score-display {
-            font-size: 20px;
         }
 
-        /* ------------------------------------------- */
-        /* ⭕️❌ 圈圈叉叉 */
-        /* ------------------------------------------- */
-        #tictactoe-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            width: 90%; /* 盡可能佔滿卡片寬度 */
-            max-width: 350px; /* 設定最大值，防止過大 */
-            height: auto;
-            aspect-ratio: 1 / 1; /* 保持 1:1 比例 */
+        /* --- 1. 點擊遊戲 --- */
+        .main-btn {
+            width: 220px; height: 220px;
+            background-color: var(--primary);
+            border: 8px solid white; border-radius: 50%;
+            color: white; font-size: 1.5rem; font-weight: bold;
+            cursor: pointer; transition: transform 0.1s;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
             margin: 20px auto;
-            border: 5px solid #333;
         }
-        .c-cell {
+        .main-btn:active { transform: scale(0.9); }
+
+        /* --- 2. 賽馬遊戲 --- */
+        .track { background: #34495e; padding: 15px; border-radius: 10px; position: relative; }
+        .lane { height: 45px; border-bottom: 1px dashed #ffffff44; position: relative; display: flex; align-items: center; }
+        .horse { position: absolute; left: 0; font-size: 2rem; transition: left 0.1s linear; }
+        .finish { position: absolute; right: 0; top: 0; bottom: 0; width: 8px; background: repeating-linear-gradient(45deg, #fff, #000 5px); }
+
+        /* --- 3. 投籃遊戲 --- */
+        #basketball-court {
             width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 70px;
-            font-weight: bold;
-            border: 3px solid #333;
-            cursor: pointer;
-            transition: background-color 0.1s;
+            height: 400px;
+            background: linear-gradient(to bottom, #2980b9, #2c3e50);
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: crosshair;
+            border: 4px solid #fff;
         }
-        .c-cell:hover {
-            background-color: #f0f0f0;
+        #hoop {
+            width: 60px; height: 10px;
+            background: red;
+            position: absolute;
+            top: 50px; left: 50%;
+            transform: translateX(-50%);
+            border-radius: 5px;
         }
-        #c-message {
-            font-size: 22px;
-            font-weight: bold;
-            margin-bottom: 15px;
+        #ball {
+            width: 30px; height: 30px;
+            background: #e67e22;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 20px; left: 50%;
+            transform: translateX(-50%);
+            box-shadow: inset -5px -5px 10px rgba(0,0,0,0.3);
+            display: none;
         }
-        #c-reset-btn {
-            background-color: #007bff; 
-            color: white;
-            padding: 12px 25px;
+        .guide-text { font-size: 0.9rem; color: #bdc3c7; margin-top: 10px; }
+
+        .click-anim {
+            position: absolute; color: var(--accent); font-weight: bold;
+            pointer-events: none; animation: floatUp 0.8s forwards;
         }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-80px); } }
     </style>
 </head>
 <body>
 
-    <div class="full-screen-container">
-        
-        <div class="game-card">
-            <h2>⚡ 反應力挑戰</h2>
-            <div id="reaction-area">
-                點擊「開始測試」後，等待畫面變紅！
-            </div>
-            <button id="reaction-button">開始測試</button>
-            <p id="r-high-score-display">最佳反應時間: <span id="r-high-score">--</span> ms</p>
-        </div>
+    <div class="nav">
+        <button class="nav-btn active" onclick="showGame('clicker')">增大點擊</button>
+        <button class="nav-btn" onclick="showGame('racing')">瘋狂賽馬</button>
+        <button class="nav-btn" onclick="showGame('basketball')">街頭投籃</button>
+    </div>
 
-        <div class="game-card">
-            <h2>⭕️❌ 圈圈叉叉 (Tic-Tac-Toe)</h2>
-            <div id="tictactoe-grid">
-                </div>
-            <p id="c-message">玩家 X 先開始</p>
-            <button id="c-reset-btn">重新開始</button>
-        </div>
+    <div class="total-score">💰 金幣: <span id="global-score">0</span></div>
 
+    <div id="clicker" class="game-section active">
+        <h2>點擊獲取財富</h2>
+        <button class="main-btn" onclick="addScore(event, 1)">點我！</button>
+        <p>優化提示：按鈕越大，點得越爽！</p>
+    </div>
+
+    <div id="racing" class="game-section">
+        <h2>誰會跑贏？(賠率 4x)</h2>
+        <div style="margin-bottom: 15px;">
+            下注: <input type="number" id="bet" value="10" min="1" style="width:50px"> 
+            選馬: <select id="horseIdx"><option value="0">🐎</option><option value="1">🦄</option><option value="2">🦓</option><option value="3">🐘</option></select>
+            <button onclick="startRace()" id="raceBtn" style="background:var(--grass); color:white; border:none; padding:5px 15px; border-radius:5px;">開賽</button>
+        </div>
+        <div class="track">
+            <div class="finish"></div>
+            <div class="lane"><div class="horse" id="h0">🐎</div></div>
+            <div class="lane"><div class="horse" id="h1">🦄</div></div>
+            <div class="lane"><div class="horse" id="h2">🦓</div></div>
+            <div class="lane"><div class="horse" id="h3">🐘</div></div>
+        </div>
+        <p id="raceMsg"></p>
+    </div>
+
+    <div id="basketball" class="game-section">
+        <h2>神射手挑戰</h2>
+        <p>進球獲得 10 金幣！</p>
+        <div id="basketball-court" onclick="shoot(event)">
+            <div id="hoop"></div>
+            <div id="ball"></div>
+        </div>
+        <p class="guide-text">點擊球場任何地方發射籃球！目標是紅色籃框。</p>
     </div>
 
     <script>
-        // =================================================================
-        //                 JavaScript 遊戲邏輯部分
-        // =================================================================
+        let score = 0;
+        const scoreDisplay = document.getElementById('global-score');
 
-        // -----------------------------------------------------------------
-        // 1. 圈圈叉叉邏輯 (Tic-Tac-Toe Logic)
-        // -----------------------------------------------------------------
-        let C_board = ['', '', '', '', '', '', '', '', ''];
-        let C_currentPlayer = 'X'; 
-        let C_gameActive = true;
-        const C_winningConditions = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8], // 行
-            [0, 3, 6], [1, 4, 7], [2, 5, 8], // 列
-            [0, 4, 8], [2, 4, 6]             // 對角線
-        ];
-
-        const C_message = document.getElementById('c-message');
-        const C_grid = document.getElementById('tictactoe-grid');
-
-        function C_initializeGrid() {
-            C_grid.innerHTML = '';
-            C_board = ['', '', '', '', '', '', '', '', ''];
-            C_currentPlayer = 'X';
-            C_gameActive = true;
-            C_message.textContent = `玩家 ${C_currentPlayer} 的回合`;
-
-            for (let i = 0; i < 9; i++) {
-                const cell = document.createElement('div');
-                cell.classList.add('c-cell');
-                cell.dataset.index = i;
-                cell.addEventListener('click', C_handleClick);
-                C_grid.appendChild(cell);
-            }
+        function addScore(e, val) {
+            score += val;
+            updateUI();
+            if(e) createAnim(e.clientX, e.clientY, `+${val}`);
         }
 
-        function C_checkWinner() {
-            let roundWon = false;
-            for (let i = 0; i < C_winningConditions.length; i++) {
-                const winCondition = C_winningConditions[i];
-                let a = C_board[winCondition[0]];
-                let b = C_board[winCondition[1]];
-                let c = C_board[winCondition[2]];
+        function updateUI() {
+            scoreDisplay.innerText = score;
+        }
 
-                if (a === '' || b === '' || c === '') {
-                    continue;
+        function showGame(id) {
+            document.querySelectorAll('.game-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function createAnim(x, y, text) {
+            const el = document.createElement('div');
+            el.className = 'click-anim';
+            el.innerText = text;
+            el.style.left = x + 'px'; el.style.top = y + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 800);
+        }
+
+        // --- 賽馬邏輯 ---
+        let racing = false;
+        function startRace() {
+            const betVal = parseInt(document.getElementById('bet').value);
+            if(racing || score < betVal) return alert("金幣不足或正在比賽！");
+            score -= betVal; updateUI(); racing = true;
+            
+            let pos = [0,0,0,0];
+            const timer = setInterval(() => {
+                for(let i=0; i<4; i++) {
+                    pos[i] += Math.random() * 2.5;
+                    document.getElementById('h'+i).style.left = pos[i] + '%';
+                    if(pos[i] >= 90) {
+                        clearInterval(timer);
+                        finishRace(i, parseInt(document.getElementById('horseIdx').value), betVal);
+                    }
                 }
-                if (a === b && b === c) {
-                    roundWon = true;
-                    break;
+            }, 50);
+        }
+
+        function finishRace(winner, guess, bet) {
+            racing = false;
+            if(winner === guess) {
+                const win = bet * 4; score += win;
+                document.getElementById('raceMsg').innerText = `贏了！獲得 ${win} 金幣！`;
+            } else {
+                document.getElementById('raceMsg').innerText = `輸了！冠軍是 ${winner+1} 號馬。`;
+            }
+            updateUI();
+            setTimeout(() => { for(let i=0; i<4; i++) document.getElementById('h'+i).style.left = '0'; }, 2000);
+        }
+
+        // --- 投籃邏輯 ---
+        let hoopPos = 50;
+        let hoopDir = 2;
+        let isShooting = false;
+
+        // 籃框移動
+        setInterval(() => {
+            hoopPos += hoopDir;
+            if(hoopPos > 85 || hoopPos < 15) hoopDir *= -1;
+            document.getElementById('hoop').style.left = hoopPos + '%';
+        }, 30);
+
+        function shoot(e) {
+            if(isShooting) return;
+            isShooting = true;
+            const ball = document.getElementById('ball');
+            const court = document.getElementById('basketball-court').getBoundingClientRect();
+            const clickX = e.clientX - court.left;
+            
+            ball.style.display = 'block';
+            ball.style.left = '50%';
+            ball.style.bottom = '20px';
+
+            // 簡易動畫
+            let bPos = 20;
+            let bLeft = 50;
+            const targetLeft = (clickX / court.width) * 100;
+            const drift = (targetLeft - 50) / 20;
+
+            const shotTimer = setInterval(() => {
+                bPos += 10;
+                bLeft += drift;
+                ball.style.bottom = bPos + 'px';
+                ball.style.left = bLeft + '%';
+
+                if(bPos > 340) { // 到達籃框高度
+                    clearInterval(shotTimer);
+                    checkHit(bLeft);
+                    setTimeout(() => { ball.style.display = 'none'; isShooting = false; }, 200);
                 }
-            }
-
-            if (roundWon) {
-                C_message.textContent = `🎉 玩家 ${C_currentPlayer} 贏了！`;
-                C_gameActive = false;
-                return;
-            }
-
-            // 檢查平局
-            if (!C_board.includes('')) {
-                C_message.textContent = `🤝 平局！`;
-                C_gameActive = false;
-                return;
-            }
-
-            // 切換玩家
-            C_currentPlayer = C_currentPlayer === 'X' ? 'O' : 'X';
-            C_message.textContent = `玩家 ${C_currentPlayer} 的回合`;
+            }, 20);
         }
 
-        function C_handleClick(event) {
-            const clickedCell = event.target;
-            const clickedCellIndex = parseInt(clickedCell.dataset.index);
-
-            if (C_board[clickedCellIndex] !== '' || !C_gameActive) {
-                return;
-            }
-
-            C_board[clickedCellIndex] = C_currentPlayer;
-            clickedCell.textContent = C_currentPlayer;
-
-            C_checkWinner();
-        }
-
-        document.getElementById('c-reset-btn').addEventListener('click', C_initializeGrid);
-
-
-        // -----------------------------------------------------------------
-        // 2. 反應力挑戰邏輯 (Reaction Challenge Logic)
-        // -----------------------------------------------------------------
-        let R_state = 'waiting'; 
-        let R_timeout;
-        let R_startTime;
-        let R_highScore = localStorage.getItem('R_highScore') || '--'; 
-        
-        const R_area = document.getElementById('reaction-area');
-        const R_button = document.getElementById('reaction-button');
-        const R_highScoreSpan = document.getElementById('r-high-score');
-        
-        R_highScoreSpan.textContent = R_highScore;
-
-        function R_resetArea() {
-            R_area.className = '';
-            R_area.style.backgroundColor = ''; 
-        }
-
-        function R_handleStart() {
-            R_resetArea();
-
-            if (R_state === 'waiting') {
-                R_state = 'ready';
-                R_area.classList.add('reaction-ready');
-                R_area.textContent = '🟡 等待... 當畫面變紅時點擊！';
-                R_button.textContent = '點擊！';
-                R_button.style.backgroundColor = '#6c757d'; 
-
-                const delay = Math.random() * 3500 + 1500; 
-                R_timeout = setTimeout(R_handleGo, delay);
-
-            } else if (R_state === 'ready') {
-                clearTimeout(R_timeout);
-                R_area.classList.add('reaction-fail');
-                R_area.textContent = '❌ 太早了！ (反應時間無效)';
-                R_button.textContent = '重新開始';
-                R_button.style.backgroundColor = '#dc3545';
-                R_state = 'waiting';
-
-            } else if (R_state === 'go') {
-                const R_endTime = performance.now();
-                const R_reactionTime = Math.round(R_endTime - R_startTime);
-                
-                R_area.classList.add('reaction-success');
-                R_area.textContent = `✅ 反應時間：${R_reactionTime} ms`;
-                R_button.textContent = '重新開始';
-                R_button.style.backgroundColor = '#28a745';
-                R_state = 'waiting';
-
-                if (R_highScore === '--' || R_reactionTime < parseInt(R_highScore)) {
-                    R_highScore = R_reactionTime;
-                    localStorage.setItem('R_highScore', R_highScore);
-                    R_highScoreSpan.textContent = R_highScore;
-                }
+        function checkHit(ballLeft) {
+            if(Math.abs(ballLeft - hoopPos) < 8) {
+                addScore(null, 10);
+                alert("空心入網！+10 金幣");
             }
         }
-
-        function R_handleGo() {
-            R_state = 'go';
-            R_resetArea();
-            R_area.classList.add('reaction-go');
-            R_area.textContent = '🔴 點擊！點擊！';
-            R_button.style.backgroundColor = '#ff4136'; 
-            R_startTime = performance.now(); 
-        }
-
-        R_button.addEventListener('click', R_handleStart);
-
-        // -----------------------------------------------------------------
-        // 3. 網頁載入時啟動
-        // -----------------------------------------------------------------
-        window.onload = function() {
-            C_initializeGrid(); 
-        };
     </script>
 </body>
 </html>
